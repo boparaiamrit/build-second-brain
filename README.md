@@ -1,10 +1,11 @@
 <p align="center">
   <h1 align="center">🧠 Build Second Brain</h1>
   <p align="center">
-    <strong>Turn your git history into an AI that thinks like you — 1 skill · 7 agent prompts · 6 hooks · 2 scripts · 12 knowledge categories</strong>
+    <strong>Your git history is a goldmine of decisions, patterns, and philosophy.<br>This plugin mines all of it — so Claude already knows how you think.</strong>
   </p>
   <p align="center">
-    Make your AI coding assistant think like <em>you</em>. Not a generic engineer. <strong>You.</strong>
+    Every commit. Every design spec. Every planning doc. Every CLAUDE.md.<br>
+    Extracted, organized into 12 categories, and injected into Claude's memory.
   </p>
   <p align="center">
     <a href="#-quick-start"><img src="https://img.shields.io/badge/Get_Started-blue?style=for-the-badge" alt="Get Started"></a>
