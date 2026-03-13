@@ -459,5 +459,5 @@ Built with [Claude Code](https://claude.ai/claude-code) ⚡
 ---
 
 <p align="center">
-  <sub>Made with intensity in Canada 🇨🇦</sub>
+  <sub>Made with intensity in India 🇮🇳</sub>
 </p>
