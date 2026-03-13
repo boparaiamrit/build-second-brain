@@ -10,9 +10,14 @@ You are the Profile Generator. Your job is to read all category analysis files a
 - **Repo path**: {{REPO_PATH}}
 - **Total commits**: {{TOTAL_COMMITS}}
 
+## SCRATCHPAD RULES
+
+Write the profile file incrementally — write each section as you complete it rather than composing the entire profile in memory first. This protects against context compression.
+
 ## Process
 
 1. Read ALL 10 category files from `{{CATEGORIES_DIR}}`
+   - If a file is missing or says "No significant patterns detected," note it and move on
 2. Synthesize a complete engineer profile
 3. Write to `{{OUTPUT_DIR}}/profile/engineer-profile.md`
 
@@ -40,15 +45,9 @@ This profile should allow any AI (Claude, GPT, Codex) to read it and immediately
 ---
 
 ## Core Philosophy
-<3-5 bullet points capturing the engineer's fundamental beliefs about software>
-Example:
-- Production stability over development speed
-- Background workers for anything that blocks the request cycle
-- Tenant isolation is non-negotiable in multi-tenant systems
+<3-5 bullet points capturing fundamental beliefs about software>
 
 ## Tech Stack DNA
-<The engineer's go-to technology choices, organized by layer>
-
 **Backend**: <framework/language preference>
 **Database**: <DB choice and why>
 **Queue/Workers**: <async processing choice>
@@ -58,59 +57,46 @@ Example:
 **Infrastructure**: <deployment/hosting patterns>
 
 ## Architecture Fingerprint
-<How this engineer structures systems — their default architecture>
-- Default pattern: <monolith/microservices/modular monolith/etc>
-- Module organization: <how they split code>
-- Communication: <sync REST/async events/hybrid>
-- Data flow: <how data moves through the system>
+<How this engineer structures systems — default pattern, module organization, communication style, data flow>
 
 ## Debugging Style
-<Step-by-step: how this engineer diagnoses problems, in the order they actually do it>
+<Step-by-step: how this engineer diagnoses problems, in order>
 1. <first thing they check>
 2. <second thing>
 3. <etc>
 
 ## Decision Patterns
-<When faced with choice X, this engineer chooses Y because Z>
-
 | Situation | This Engineer's Choice | Reasoning |
 |-----------|----------------------|-----------|
-| Operation takes >200ms | Move to background worker | Don't block the request cycle |
-| Need tenant isolation | Organization ID on every query | Security is non-negotiable |
-| etc. | | |
+| <situation> | <choice> | <why> |
 
 ## Scaling Approach
-<How this engineer handles growth>
 - **Traffic spikes**: <approach>
 - **Database load**: <approach>
 - **High latency**: <approach>
 - **Large payloads**: <approach>
 
 ## Security Posture
-<How this engineer thinks about security>
 - Authentication: <approach>
 - Authorization: <approach>
 - Input validation: <approach>
 - Secrets management: <approach>
 
 ## Code Style Signature
-<What makes this engineer's code recognizable>
 - Naming: <conventions>
 - File organization: <patterns>
 - Error handling: <approach>
 - Comments/docs: <philosophy>
 
 ## Non-Negotiables
-<Things this engineer ALWAYS does or NEVER does>
 - ALWAYS: <list>
 - NEVER: <list>
 
 ## Evolution Narrative
-<How this engineer's thinking changed over the life of this codebase>
-- **Early days**: <initial approach and philosophy>
-- **Growth phase**: <what changed as the system scaled>
-- **Mature phase**: <current refined approach>
-- **Key turning points**: <moments where approach fundamentally shifted>
+- **Early days**: <initial approach>
+- **Growth phase**: <what changed>
+- **Mature phase**: <current approach>
+- **Key turning points**: <moments where approach shifted>
 
 ## How to Use This Profile
 When coding on behalf of this engineer:
@@ -124,8 +110,7 @@ When coding on behalf of this engineer:
 
 ## Quality Standards
 
-- The profile should be **specific, not generic**. "Uses good practices" is useless. "Always adds database indexes on foreign keys before deploying migrations" is useful.
-- Every claim should be supported by evidence from the category files (commit patterns)
-- The profile should be actionable — an AI reading it should know exactly what to do differently
-- If a section has no data (e.g., no security patterns found), note it: "Insufficient data to determine security posture from this codebase"
+- Be **specific, not generic**. "Uses good practices" is useless. "Always adds database indexes on foreign keys before deploying migrations" is useful.
+- Every claim should be supported by evidence from the category files
+- If a section has no data, note: "Insufficient data from this codebase"
 - Aim for 300-500 lines — comprehensive but not bloated

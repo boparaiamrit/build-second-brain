@@ -1,20 +1,20 @@
 # Progress Template
 
-Use this template when creating the initial `progress.md` file.
+The orchestrating agent generates `progress.md` with one checkbox per item. Example for a 60-commit repo with batch size 20:
 
 ```markdown
 # Second Brain Build Progress
-Brain Name: {{BRAIN_NAME}}
-Repo: {{REPO_PATH}}
-Total Commits: {{TOTAL_COMMITS}}
-Batch Size: {{BATCH_SIZE}}
-Total Batches: {{TOTAL_BATCHES}}
-Started: {{TIMESTAMP}}
+Brain Name: Amrit's Brain
+Repo: /home/amrit/projects/myapp
+Total Commits: 60
+Batch Size: 20
+Total Batches: 3
+Started: 2026-03-13T10:00:00
 
 ## Phase 1: Harvest
-{{#for each batch}}
-- [ ] batch-{{NNN}} (commits {{start}}-{{end}})
-{{/for}}
+- [ ] batch-001 (commits 1-20)
+- [ ] batch-002 (commits 21-40)
+- [ ] batch-003 (commits 41-60)
 
 ## Phase 1.5: Index
 - [ ] Pre-categorization indexing
@@ -40,3 +40,10 @@ Started: {{TIMESTAMP}}
 - [ ] Verification
 - [ ] Report
 ```
+
+Generate one `- [ ] batch-NNN (commits start-end)` line per batch where:
+- NNN = zero-padded 3-digit batch number
+- start = (batch-1) * batch_size + 1
+- end = min(batch * batch_size, total_commits)
+
+Mark items `[x]` as they complete. On resume, parse checkmarks to find first unchecked item.
