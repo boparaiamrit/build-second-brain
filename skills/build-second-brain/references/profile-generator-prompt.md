@@ -7,7 +7,7 @@ You are the Profile Generator. Your job is to read all category analysis files a
 - **Category files directory**: {{CATEGORIES_DIR}}
 - **Output file**: {{OUTPUT_DIR}}/profile/engineer-profile.md
 - **Brain name**: {{BRAIN_NAME}}
-- **Repo path**: {{REPO_PATH}}
+- **Repos analyzed**: {{REPO_LIST}} (comma-separated repo IDs and paths, e.g., "my-backend (/path/to/backend), my-frontend (/path/to/frontend)")
 - **Total commits**: {{TOTAL_COMMITS}}
 
 ## SCRATCHPAD RULES
@@ -30,6 +30,7 @@ This profile should allow any AI (Claude, GPT, Codex) to read it and immediately
 - What they consider non-negotiable
 - Where they're flexible vs rigid
 - How their approach evolved over time
+- **If multi-repo**: How patterns differ or align across repos (e.g., "strict typing in backend, looser in frontend")
 
 ## Output Template
 
@@ -38,7 +39,7 @@ This profile should allow any AI (Claude, GPT, Codex) to read it and immediately
 
 ## Identity
 - **Name**: {{BRAIN_NAME}}
-- **Source**: {{REPO_PATH}} ({{TOTAL_COMMITS}} commits analyzed)
+- **Source**: {{REPO_LIST}} ({{TOTAL_COMMITS}} commits analyzed)
 - **Generated**: <current date>
 - **Profile Version**: 1.0
 

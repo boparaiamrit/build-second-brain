@@ -48,7 +48,17 @@ def normalize_tag(tag: str) -> str:
     return re.sub(r"[\s_-]", "", tag).lower()
 
 
-def parse_commits(content: str) -> list:
+def extract_repo_id_from_filename(filename: str) -> str:
+    """Extract repo ID from batch filename like batch-my-backend-001-commits-1-20.md."""
+    # Pattern: batch-<REPO_ID>-NNN-commits-X-Y.md
+    # Also handles legacy: batch-NNN-commits-X-Y.md (no repo ID)
+    match = re.match(r"batch-(.+?)-\d{3}-commits-", filename)
+    if match:
+        return match.group(1)
+    return "default"
+
+
+def parse_commits(content: str, source_repo_id: str = "default") -> list:
     """Parse a scratchpad file into individual commit sections."""
     commits = []
     # Split on ## Commit: headers
@@ -58,6 +68,10 @@ def parse_commits(content: str) -> list:
         section = section.strip()
         if not section.startswith("## Commit:"):
             continue
+
+        # Extract repo ID from content (if present) or use source file's repo ID
+        repo_match = re.search(r"^Repo:\s*(.+)$", section, re.MULTILINE)
+        repo_id = repo_match.group(1).strip() if repo_match else source_repo_id
 
         # Extract date for timeline statistics
         date_match = re.search(r"^Date:\s*(.+)$", section, re.MULTILINE)
@@ -101,6 +115,7 @@ def parse_commits(content: str) -> list:
             "content": section,
             "categories": categories,
             "date": commit_date,
+            "repo_id": repo_id,
             "untagged": len(categories) == 0,
         })
 
@@ -128,6 +143,8 @@ def main():
     total_commits = 0
     untagged_count = 0
     dates = []
+    repo_commit_counts = defaultdict(int)  # Per-repo commit tracking
+    repo_ids_seen = set()
 
     # Read all batch files in order
     batch_files = sorted(scratchpad_dir.glob("batch-*.md"))
@@ -143,7 +160,9 @@ def main():
             print(f"Warning: Could not read {batch_file}: {e}, skipping")
             continue
 
-        commits = parse_commits(content)
+        # Extract repo ID from filename for attribution
+        source_repo_id = extract_repo_id_from_filename(batch_file.name)
+        commits = parse_commits(content, source_repo_id)
 
         if not commits:
             print(
@@ -153,6 +172,10 @@ def main():
         total_commits += len(commits)
 
         for commit in commits:
+            repo_id = commit.get("repo_id", "default")
+            repo_ids_seen.add(repo_id)
+            repo_commit_counts[repo_id] += 1
+
             if commit["date"]:
                 dates.append(commit["date"])
 
@@ -196,7 +219,16 @@ def main():
         f.write(f"## Totals\n")
         f.write(f"- Total commits parsed: {total_commits}\n")
         f.write(f"- Batch files processed: {len(batch_files)}\n")
+        f.write(f"- Repos analyzed: {len(repo_ids_seen)}\n")
         f.write(f"- Uncategorized commits: {untagged_count}\n\n")
+
+        # Per-repo breakdown (only if multi-repo)
+        if len(repo_ids_seen) > 1:
+            f.write(f"## Commits Per Repo\n")
+            for repo_id in sorted(repo_ids_seen):
+                f.write(f"- {repo_id}: {repo_commit_counts[repo_id]}\n")
+            f.write("\n")
+
         f.write(f"## Commits Per Category\n")
         for category in CATEGORIES:
             count = len(category_findings.get(category, []))
@@ -217,8 +249,12 @@ def main():
 
     # Print summary
     print(f"Indexing complete:")
+    print(f"  Repos analyzed: {len(repo_ids_seen)} ({', '.join(sorted(repo_ids_seen))})")
     print(f"  Batch files processed: {len(batch_files)}")
     print(f"  Total commits parsed: {total_commits}")
+    if len(repo_ids_seen) > 1:
+        for repo_id in sorted(repo_ids_seen):
+            print(f"    {repo_id}: {repo_commit_counts[repo_id]} commits")
     print(f"  Uncategorized commits: {untagged_count}")
     print(f"  Category files created: {len(CATEGORIES)}")
     for category in CATEGORIES:

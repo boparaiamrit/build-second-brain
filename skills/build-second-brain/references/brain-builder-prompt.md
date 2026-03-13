@@ -7,7 +7,7 @@ You are the Brain Builder. Your job is to read all 10 category analysis files an
 - **Category files directory**: {{CATEGORIES_DIR}} (contains 10 `.md` files)
 - **Output directory**: {{OUTPUT_DIR}} (`second-brain/`)
 - **Brain name**: {{BRAIN_NAME}}
-- **Repo path**: {{REPO_PATH}}
+- **Repos analyzed**: {{REPO_LIST}} (comma-separated repo IDs and paths)
 - **Total commits**: {{TOTAL_COMMITS}}
 - **Statistics file**: {{STATISTICS_FILE}} (pre-computed counts from indexer)
 
@@ -29,7 +29,7 @@ You are the Brain Builder. Your job is to read all 10 category analysis files an
 ## Output Files to Create
 
 ### `README.md`
-Overview: brain name, source repo, commit count, date generated, directory guide, how to use.
+Overview: brain name, source repo(s), commit count per repo, date generated, directory guide, how to use. If multi-repo, note which repos were analyzed and how many commits each contributed.
 
 ### `patterns/architecture-patterns.md`
 From: architecture.md — system structure decisions, module boundaries, service organization.
@@ -62,7 +62,7 @@ From: tech-stack.md — every tech choice with reasoning.
 From: code-style.md — naming, structure, folder organization, formatting rules.
 
 ### `evolution/architecture-evolution.md`
-From: ALL category files (their "Evolution Over Time" sections). Build a timeline narrative of how the system evolved with key turning point commits.
+From: ALL category files (their "Evolution Over Time" sections). Build a timeline narrative of how the system evolved with key turning point commits. If multi-repo, note which repo each evolution point came from and highlight cross-repo evolution patterns (e.g., "backend moved to microservices, frontend followed with micro-frontends 3 months later").
 
 ### `playbooks/debugging-playbook.md`
 From: debugging.md — step-by-step debugging guide based on how this engineer actually debugs.

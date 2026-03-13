@@ -1,18 +1,23 @@
-# Build Second Brain — Skill Design Spec (v2 — Post-Audit)
+# Build Second Brain — Skill Design Spec (v3 — Multi-Repo + Hybrid Scope)
 
 ## Overview
 
-A Claude Code plugin (`/build-second-brain`) that analyzes a git repository commit-by-commit from the very first commit, using maximum parallel agents, to extract engineering patterns, decisions, debugging approaches, and architectural thinking — then builds a structured "second brain" knowledge base and engineer profile.
+A Claude Code plugin (`/build-second-brain`) that analyzes one or more git repositories commit-by-commit from the very first commit, using maximum parallel agents, to extract engineering patterns, decisions, debugging approaches, and architectural thinking — then builds a structured "second brain" knowledge base and engineer profile with hybrid global/local memory injection.
 
 ## Problem
 
 Engineers who work with AI coders (Claude Code, Codex) face a repetitive loop: every session starts from zero context. The AI doesn't know the engineer's architecture preferences, debugging style, scaling decisions, or production paranoia. This skill reverses that by mining the engineer's git history to extract their engineering brain.
+
+**Additional problems solved in v3:**
+- Engineers often split work across multiple repos (frontend + backend, microservices). A single-repo brain misses cross-repo patterns.
+- A brain built from repo A is invisible when working in repo B because Claude Code memory is project-scoped (`~/.claude/projects/<hash>/memory/`). Engineers need their core identity to follow them everywhere.
 
 ## Target User
 
 - AI-native engineers with 1000+ commit repos
 - Private repos, local git access
 - Want a persistent knowledge base that makes AI think like them
+- **May have multiple related repos** (frontend/backend, microservices, monorepo + satellite repos)
 
 ## Approach: Parallel Swarm with Shared Scratchpad
 
@@ -26,6 +31,24 @@ Three-phase architecture using Agent Teams, background agents, hooks, loops, and
 
 All paths are resolved to absolute paths in Step 0 and passed to every agent prompt. No agent ever uses relative paths. This prevents CWD-related failures across subagents, teams, cron jobs, and bash commands.
 
+### Key Design Principle: Multi-Repo Support
+
+The skill accepts one or more repo paths. Each repo is harvested independently with its own commits file and batch numbering, but all findings merge into shared scratchpad/indexed/category directories. Commit entries and scratchpad filenames are prefixed with a short repo identifier (derived from directory name) so findings remain traceable to their source repo.
+
+**Repo identification:**
+- Each repo gets a short `REPO_ID` derived from its directory name (e.g., `/path/to/my-backend` → `my-backend`)
+- Scratchpad files: `batch-<REPO_ID>-NNN-commits-X-Y.md`
+- Commit entries include `Repo: <REPO_ID>` header
+- The indexer and category agents see findings from all repos merged together
+
+### Key Design Principle: Hybrid Global/Local Memory
+
+The brain's memory injection uses a hybrid scope:
+- **Global memory** (`~/.claude/memory/`): Core identity — engineer profile, non-negotiables, tech stack DNA, debugging style. Loads in every Claude session regardless of project.
+- **Local memory** (project-specific `~/.claude/projects/<hash>/memory/`): Repo-specific patterns, architecture conventions, code style rules. Only loads when working in that project.
+
+The user chooses scope at Step 0: `global` (recommended for personal brains), `local` (for project-specific brains), or `hybrid` (default — splits automatically).
+
 ### Security: Data Isolation
 
 All agent prompts include explicit instructions to treat commit messages and diff content as UNTRUSTED DATA — never as instructions to follow. This prevents prompt injection via malicious commit messages.
@@ -37,15 +60,17 @@ All agent prompts include explicit instructions to treat commit messages and dif
 **Mechanism:** Agent Teams (`TeamCreate`) with fallback to wave-based subagents.
 
 **Preflight (Step 0):**
-- Verify repo exists and has >0 commits
+- Accept one or more repo paths (comma-separated or space-separated)
+- For each repo: verify exists, has >0 commits, resolve absolute path, record HEAD hash
+- Derive `REPO_ID` from each repo's directory name
 - Check Python availability (for indexer)
-- If >5000 commits, suggest batch size 50 (default: 20)
-- Resolve all absolute paths: `WORK_DIR`, `REPO_PATH`, `COMMITS_FILE`
-- Record HEAD commit hash for reproducibility
+- If total commits across all repos >5000, suggest batch size 50 (default: 20)
+- Ask user for scope: `global`, `local`, or `hybrid` (default: `hybrid`)
+- Resolve all absolute paths: `WORK_DIR`, `REPO_PATHS[]`, `REPO_IDS[]`
 
-**Execution:**
-- Orchestrator runs `git -C "$REPO_PATH" log --format="%H|%s|%ai" --reverse > "$WORK_DIR/commits.txt"`
-- Splits into batches of configurable size (20 or 50)
+**Execution (per repo):**
+- Orchestrator runs `git -C "$REPO_PATH" log --format="%H|%s|%ai" --reverse > "$WORK_DIR/<REPO_ID>-commits.txt"`
+- Splits each repo's commits into batches of configurable size (20 or 50)
 - **Teams mode:** Creates team with 5 teammates. Tasks added via `TodoWrite`. Each teammate claims tasks, processes batches, marks complete.
 - **Fallback mode:** Spawns 5 background agents per wave with statically assigned batches. Uses `TaskOutput` to poll for completion before spawning next wave.
 - Each teammate:
@@ -54,7 +79,7 @@ All agent prompts include explicit instructions to treat commit messages and dif
   3. **Large diff guard:** If output exceeds 500 lines, use `git show --stat` + selective inspection. Skip binary files.
   4. **Resume check:** Before analyzing a commit, check if it already exists in the scratchpad file. Skip if found.
   5. Extracts structured findings with per-commit category tagging
-  6. Writes ALL findings to `$WORK_DIR/scratchpad/batch-NNN-commits-X-Y.md` IMMEDIATELY after each commit
+  6. Writes ALL findings to `$WORK_DIR/scratchpad/batch-<REPO_ID>-NNN-commits-X-Y.md` IMMEDIATELY after each commit
   7. Marks batch task complete, claims next batch
 
 **Batch size:** Configurable (20 default, 50 for >5000 commits). Stored in `config.md` and passed to all agents.
@@ -120,10 +145,15 @@ After both waves: verify all 10 category files exist. Re-spawn failed agents ind
 
 **Agent 3: Memory Injector**
 - Reads the profile + key patterns
-- Memory directory resolved by orchestrator BEFORE spawning (via `ls ~/.claude/projects/*/memory/`)
-- Receives absolute `MEMORY_DIR` path — does not guess
-- Writes 3 Claude memory files with proper frontmatter
-- Creates or updates `MEMORY.md` index (appends, never overwrites existing entries)
+- Receives `SCOPE` variable (`global`, `local`, or `hybrid`)
+- **Global scope**: Writes to `~/.claude/memory/` (resolved absolute path)
+- **Local scope**: Writes to project-specific `~/.claude/projects/<hash>/memory/` (resolved by orchestrator via `ls ~/.claude/projects/*/memory/`)
+- **Hybrid scope** (default):
+  - Core identity (profile, decision rules) → `~/.claude/memory/` (global)
+  - Repo-specific patterns → project-specific memory directory (local)
+- Receives absolute `GLOBAL_MEMORY_DIR` and/or `LOCAL_MEMORY_DIR` paths — does not guess
+- Writes 3 Claude memory files with proper frontmatter (split across directories based on scope)
+- Creates or updates `MEMORY.md` index in each target directory (appends, never overwrites existing entries)
 
 ---
 
@@ -132,21 +162,21 @@ After both waves: verify all 10 category files exist. Re-spawn failed agents ind
 ### Directory Structure During Execution
 
 ```
-.second-brain/                    (WORK_DIR — absolute path)
-├── config.md                     ← Brain name, repo path, batch size, HEAD hash
-├── commits.txt                   ← Full commit list (hash|message|date)
-├── progress.md                   ← Phase/batch completion tracking
-├── scratchpad/                   ← Phase 1 output
-│   ├── batch-001-commits-1-20.md
-│   ├── batch-002-commits-21-40.md
-│   └── ... (one per batch)
-├── indexed/                      ← Phase 1.5 output
+.second-brain/                              (WORK_DIR — absolute path)
+├── config.md                               ← Brain name, repo paths, scope, batch size, HEAD hashes
+├── <repo-id>-commits.txt                   ← Per-repo commit list (hash|message|date)
+├── progress.md                             ← Phase/batch completion tracking
+├── scratchpad/                             ← Phase 1 output
+│   ├── batch-<repo-id>-001-commits-1-20.md
+│   ├── batch-<repo-id>-002-commits-21-40.md
+│   └── ... (one per batch per repo)
+├── indexed/                                ← Phase 1.5 output (merged across repos)
 │   ├── architecture-raw.md
 │   ├── tech-stack-raw.md
 │   ├── ...
-│   ├── uncategorized-raw.md      ← Commits with no recognized tags
-│   └── statistics-raw.md         ← Pre-computed counts and timeline
-└── categories/                   ← Phase 2 output
+│   ├── uncategorized-raw.md                ← Commits with no recognized tags
+│   └── statistics-raw.md                   ← Pre-computed counts and timeline (per-repo breakdown)
+└── categories/                             ← Phase 2 output
     ├── architecture.md
     ├── tech-stack.md
     └── ... (10 total)
@@ -239,8 +269,10 @@ hooks:
 
 1. Every commit accounted for — commits with diffs fully analyzed, merge/empty/binary commits logged
 2. All 10 knowledge categories have organized findings
-3. Engineer profile accurately reflects patterns from the codebase
+3. Engineer profile accurately reflects patterns from the codebase (across all repos if multi-repo)
 4. Claude memory files enable future sessions to think like the engineer
-5. Process is resumable if interrupted at any phase
-6. Scratchpad files provide full audit trail
-7. No data lost to context compression, agent crashes, or path resolution failures
+5. **Multi-repo**: Cross-repo patterns detected (e.g., "always updates frontend types when backend API changes")
+6. **Hybrid scope**: Core identity follows the engineer globally; repo-specific patterns stay local
+7. Process is resumable if interrupted at any phase
+8. Scratchpad files provide full audit trail with repo attribution
+9. No data lost to context compression, agent crashes, or path resolution failures

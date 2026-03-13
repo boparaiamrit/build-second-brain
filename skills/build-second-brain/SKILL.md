@@ -1,36 +1,16 @@
 ---
 name: build-second-brain
 description: >
-  Analyze a git repository commit-by-commit from the very first commit using maximum parallel agents
+  Analyze one or more git repositories commit-by-commit from the very first commit using maximum parallel agents
   to extract engineering patterns, architecture decisions, debugging approaches, scaling strategies,
   and coding conventions — then build a structured "second brain" knowledge base with a personalized
-  engineer profile and Claude memory injection. Use this skill when the user mentions "second brain",
-  "analyze my repo", "extract my patterns", "learn from my commits", "build my brain", "reverse engineer
-  my thinking", "learn how I code", "analyze git history", or wants to capture their engineering
-  decision-making from a codebase. Also trigger when the user wants to create an engineer profile,
-  extract architecture patterns from commits, or build a knowledge base from code history.
-allowed-tools:
-  - Agent
-  - TeamCreate
-  - TeamDelete
-  - SendMessage
-  - TodoWrite
-  - CronCreate
-  - CronDelete
-  - CronList
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Grep
-  - Glob
-  - AskUserQuestion
-  - TaskOutput
-hooks:
-  Stop:
-    - command: "bash -c 'test -f second-brain/profile/engineer-profile.md && echo ok || (echo Profile not generated >&2 && exit 2)'"
-  PreCompact:
-    - command: "bash -c 'echo Context compacting — all findings should already be in scratchpad files on disk.'"
+  engineer profile and hybrid global/local Claude memory injection. Supports multi-repo analysis
+  (frontend + backend, microservices) to capture cross-repo patterns. Use this skill when the user
+  mentions "second brain", "analyze my repo", "extract my patterns", "learn from my commits",
+  "build my brain", "reverse engineer my thinking", "learn how I code", "analyze git history",
+  or wants to capture their engineering decision-making from a codebase. Also trigger when the user
+  wants to create an engineer profile, extract architecture patterns from commits, build a knowledge
+  base from code history, or analyze multiple repositories together.
 ---
 
 # Build Second Brain
@@ -48,29 +28,38 @@ Every agent writes to disk immediately. Nothing is kept only in memory. If conte
 
 ## Step 0: Gather Inputs & Preflight
 
-Ask the user for two things (or accept as arguments):
+Ask the user for three things (or accept as arguments):
 
-1. **Repo path** — "What's the path to the git repo you want to analyze?"
+1. **Repo path(s)** — "What's the path to the git repo(s) you want to analyze? (comma-separated for multiple)"
+   - Single repo: `/path/to/my-app`
+   - Multiple repos: `/path/to/backend, /path/to/frontend`
 2. **Brain name** — "What should we name this brain?" (default: "Second Brain")
    - Examples: "Amrit's Brain", "Komal's Brain", "DevTeam Brain"
+3. **Memory scope** — "Where should the brain's memory live?"
+   - `hybrid` (default, recommended): Core identity goes global, repo-specific patterns stay local
+   - `global`: Everything goes to global memory (available in all projects)
+   - `local`: Everything stays in the current project's memory only
 
-Then run preflight checks:
+Then run preflight checks **for each repo**:
 
 ```bash
-# Verify repo exists and has commits
-git -C <repo_path> rev-list --count HEAD
+# For each repo path:
+REPO_PATH="$(cd <repo_path> && pwd)"
+REPO_ID="$(basename "$REPO_PATH")"  # e.g., "my-backend"
+git -C "$REPO_PATH" rev-list --count HEAD
+git -C "$REPO_PATH" rev-parse HEAD  # Record HEAD hash
 
 # Verify Python is available (needed for indexer)
 python3 --version 2>/dev/null || python --version 2>/dev/null
 ```
 
 **Preflight gates:**
-- If commit count is 0 or `git rev-list` fails: abort with "This repo has no commits to analyze."
+- If any repo has 0 commits or `git rev-list` fails: abort with "Repo <path> has no commits to analyze."
 - If Python is not available: warn user, plan to use inline indexing fallback.
-- If commit count > 5000: warn user and suggest using batch size 50 instead of 20.
+- If total commits across all repos > 5000: warn user and suggest using batch size 50 instead of 20.
 
-Report the commit count:
-> "This repo has **X commits**. I'll split them into **Y batches of Z** and use parallel agents to analyze every single one. Estimated token usage: ~3M-6M for 1000 commits. Proceed?"
+Report the commit counts:
+> "Found **N repos** with **X total commits** (repo-a: 500, repo-b: 300). I'll split them into batches of Z and use parallel agents to analyze every single one. Memory scope: hybrid. Estimated token usage: ~3M-6M per 1000 commits. Proceed?"
 
 Wait for confirmation.
 
@@ -78,9 +67,13 @@ Wait for confirmation.
 
 ```bash
 WORK_DIR="$(pwd)/.second-brain"
-REPO_PATH="$(cd <repo_path> && pwd)"
 BRAIN_NAME="<user's chosen name>"
-BATCH_SIZE=20  # or 50 if >5000 commits
+SCOPE="hybrid"  # or global or local
+BATCH_SIZE=20   # or 50 if >5000 total commits
+
+# Per repo (build arrays):
+REPO_PATHS=("<abs_path_1>" "<abs_path_2>" ...)
+REPO_IDS=("<repo-id-1>" "<repo-id-2>" ...)
 ```
 
 Store these in `.second-brain/config.md`. ALL subsequent steps, agent prompts, and bash commands MUST use these absolute paths — never relative paths like `.second-brain/`.
@@ -115,43 +108,51 @@ Write `$WORK_DIR/config.md`:
 ```markdown
 # Second Brain Config
 Brain Name: <BRAIN_NAME>
-Repo Path: <REPO_PATH> (absolute)
 Work Dir: <WORK_DIR> (absolute)
-Total Commits: <N>
+Memory Scope: <SCOPE> (hybrid/global/local)
 Batch Size: <BATCH_SIZE>
-Total Batches: <ceil(N/BATCH_SIZE)>
 Started: <timestamp>
-Head Commit: <HEAD hash at time of analysis>
+
+## Repos
+| Repo ID | Path | Commits | HEAD Hash |
+|---------|------|---------|-----------|
+| <repo-id-1> | <abs_path_1> | <N1> | <hash1> |
+| <repo-id-2> | <abs_path_2> | <N2> | <hash2> |
+
+Total Commits: <N1+N2+...>
+Total Batches: <ceil(N1/BATCH_SIZE) + ceil(N2/BATCH_SIZE) + ...>
 ```
 
 ## Step 2: Get All Commits
 
-Use `git -C` to avoid changing directories:
+For **each repo**, extract commits into a separate file using `git -C`:
 
 ```bash
-git -C "$REPO_PATH" log --format="%H|%s|%ai" --reverse > "$WORK_DIR/commits.txt"
+# For each repo:
+git -C "$REPO_PATH" log --format="%H|%s|%ai" --reverse > "$WORK_DIR/<REPO_ID>-commits.txt"
 ```
 
-Write initial `progress.md` with one checkbox line per batch, per category, per synthesis step. Use the format from [references/progress-template.md](references/progress-template.md) but replace pseudocode with actual generated lines.
+Write initial `progress.md` with one checkbox line per batch **per repo**, per category, per synthesis step. Use the format from [references/progress-template.md](references/progress-template.md) but replace pseudocode with actual generated lines. Group Phase 1 batches by repo.
 
 ## Step 3: Phase 1 — HARVEST
 
-This is the most critical phase. Every commit gets analyzed.
+This is the most critical phase. Every commit gets analyzed. **For multi-repo, harvest each repo independently** — spawn a team/wave per repo, or interleave batches from all repos into a single team's task list.
 
 ### Agent Teams Mode (preferred)
 
 Try Agent Teams for self-balancing workload:
 
 1. Create a team with 5 teammates using `TeamCreate`
-2. For each batch, add a task to the team's shared task list via `TodoWrite` — each task specifies batch number, start line, end line in `commits.txt`
+2. For each repo, for each batch, add a task to the team's shared task list via `TodoWrite` — each task specifies repo ID, repo path, batch number, start line, end line in `<REPO_ID>-commits.txt`
 3. Each teammate claims tasks, processes them, and marks complete
 
 The prompt for each teammate is in [references/harvest-agent-prompt.md](references/harvest-agent-prompt.md). Read it and use it as the agent prompt, filling in these **absolute paths**:
-- `REPO_PATH`: absolute path to the repo
-- `COMMITS_FILE`: absolute path to `$WORK_DIR/commits.txt`
+- `REPO_PATH`: absolute path to the repo (from the task — varies per batch in multi-repo)
+- `REPO_ID`: short identifier for the repo (e.g., "my-backend")
+- `COMMITS_FILE`: absolute path to `$WORK_DIR/<REPO_ID>-commits.txt`
 - `SCRATCHPAD_DIR`: absolute path to `$WORK_DIR/scratchpad/`
 - `BATCH_SIZE`: the configured batch size
-- `BATCH_ASSIGNMENT`: For Teams mode: "Claim tasks from the team's shared task list using TodoWrite. Each task specifies a batch number and line range. Mark each task complete after writing its scratchpad file."
+- `BATCH_ASSIGNMENT`: For Teams mode: "Claim tasks from the team's shared task list using TodoWrite. Each task specifies a repo ID, repo path, batch number, and line range. Mark each task complete after writing its scratchpad file."
 
 **If TeamCreate fails**, fall to Fallback Mode.
 
@@ -160,12 +161,12 @@ The prompt for each teammate is in [references/harvest-agent-prompt.md](referenc
 Spawn background subagents in waves of 5:
 
 1. Spawn 5 agents with `run_in_background: true`
-2. Each agent gets statically assigned batches: agent 1 gets batches 1,6,11,...; agent 2 gets 2,7,12,...; etc.
+2. Each agent gets statically assigned batches (across all repos): agent 1 gets batches 1,6,11,...; agent 2 gets 2,7,12,...; etc.
 3. Collect the agent IDs returned from each spawn
 4. Use `TaskOutput` to poll each agent ID until all 5 complete
 5. Spawn next wave of 5
 6. Repeat until all batches processed
-7. Use the same harvest agent prompt, but fill `BATCH_ASSIGNMENT` with explicit batch numbers: "Process batches: 1, 6, 11, 16, ..."
+7. Use the same harvest agent prompt, but fill `BATCH_ASSIGNMENT` with explicit batch numbers and repo IDs: "Process: my-backend batch 1, my-frontend batch 2, ..."
 
 ### Progress Monitoring
 
@@ -183,8 +184,8 @@ Store the cron job ID so it can be cancelled later (on success OR failure).
 
 ### Phase 1 Completion Verification
 
-After all agents complete:
-1. Count `batch-*.md` files — must equal total batch count
+After all agents complete, verify **per repo**:
+1. Count `batch-<REPO_ID>-*.md` files for each repo — must equal that repo's batch count
 2. For each batch file, count `## Commit:` headers — flag any files with fewer commits than expected batch size (last batch may have fewer)
 3. If any batch files are missing or incomplete, re-spawn agents for those batches only
 
@@ -257,7 +258,7 @@ Read the prompt from [references/brain-builder-prompt.md](references/brain-build
 - `CATEGORIES_DIR`: absolute path to `$WORK_DIR/categories/`
 - `OUTPUT_DIR`: absolute path to `second-brain/` in the working directory
 - `BRAIN_NAME`: from config
-- `REPO_PATH`: from config
+- `REPO_LIST`: from config (all repo IDs and paths)
 - `TOTAL_COMMITS`: from config
 - `STATISTICS_FILE`: absolute path to `$WORK_DIR/indexed/statistics-raw.md`
 
@@ -272,7 +273,7 @@ For `raw/statistics.md`, use the pre-computed `statistics-raw.md` from the index
 Read the prompt from [references/profile-generator-prompt.md](references/profile-generator-prompt.md). Fill in:
 - `CATEGORIES_DIR`: absolute path
 - `OUTPUT_DIR`: absolute path
-- `BRAIN_NAME`, `REPO_PATH`, `TOTAL_COMMITS`: from config
+- `BRAIN_NAME`, `REPO_LIST`, `TOTAL_COMMITS`: from config
 
 ### Agent 3: Memory Injector
 
@@ -281,13 +282,22 @@ Read the prompt from [references/memory-injector-prompt.md](references/memory-in
 - `PATTERNS_DIR`: absolute path to `second-brain/patterns/`
 - `DECISIONS_FILE`: absolute path to `second-brain/decisions/tech-decisions.md`
 - `BRAIN_NAME`: from config
+- `SCOPE`: from config (`hybrid`, `global`, or `local`)
 
-**Resolve the memory directory BEFORE spawning this agent:**
+**Resolve memory directories BEFORE spawning this agent:**
 ```bash
-# Find the actual Claude project memory directory
-ls -d ~/.claude/projects/*/memory/ 2>/dev/null | head -5
+# Global memory directory (always exists or create it)
+GLOBAL_MEMORY_DIR="$HOME/.claude/memory"
+mkdir -p "$GLOBAL_MEMORY_DIR"
+
+# Local (project-specific) memory directory
+LOCAL_MEMORY_DIR=$(ls -d ~/.claude/projects/*/memory/ 2>/dev/null | head -1)
 ```
-Pass the resolved absolute `MEMORY_DIR` path to the agent — do not ask the agent to guess.
+
+Pass the resolved absolute paths to the agent based on scope:
+- `hybrid`: pass both `GLOBAL_MEMORY_DIR` and `LOCAL_MEMORY_DIR`
+- `global`: pass only `GLOBAL_MEMORY_DIR`
+- `local`: pass only `LOCAL_MEMORY_DIR`
 
 ## Step 7: Verify & Report
 
@@ -308,12 +318,15 @@ BUILD COMPLETE
   second-brain/profile/engineer-profile.md — "<Brain Name>" engineer DNA
   second-brain/patterns/               — X patterns across 10 categories
   second-brain/playbooks/              — debugging & scaling playbooks
-  .claude/memory/                      — Claude now thinks like you
 
-  Commits analyzed: <N>
+  Memory scope: <hybrid/global/local>
+  Global memory: ~/.claude/memory/     — core identity (loads everywhere)
+  Local memory: ~/.claude/projects/... — repo patterns (loads in project)
+
+  Repos analyzed: <list of repo IDs>
+  Commits analyzed: <N total> (<per-repo breakdown>)
   Patterns found: <count>
   Categories covered: <count>/10
-  Head commit at analysis: <hash>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

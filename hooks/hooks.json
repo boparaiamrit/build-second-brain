@@ -1,0 +1,24 @@
+{
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash -c 'test -f second-brain/profile/engineer-profile.md && echo ok || (echo \"Profile not generated\" >&2 && exit 2)'"
+        }
+      ]
+    }
+  ],
+  "PreCompact": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash -c 'echo \"Context compacting — all findings should already be in scratchpad files on disk.\"'"
+        }
+      ]
+    }
+  ]
+}
