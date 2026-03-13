@@ -1,8 +1,8 @@
-# Build Second Brain — Skill Design Spec (v3 — Multi-Repo + Hybrid Scope)
+# Build Second Brain — Skill Design Spec (v4 — Multi-Repo + Hybrid Scope + Artifact Mining)
 
 ## Overview
 
-A Claude Code plugin (`/build-second-brain`) that analyzes one or more git repositories commit-by-commit from the very first commit, using maximum parallel agents, to extract engineering patterns, decisions, debugging approaches, and architectural thinking — then builds a structured "second brain" knowledge base and engineer profile with hybrid global/local memory injection.
+A Claude Code plugin (`/build-second-brain`) that analyzes one or more git repositories commit-by-commit from the very first commit, PLUS non-code artifacts (design specs, planning docs, project instructions, memory files), using maximum parallel agents, to extract engineering patterns, product thinking, planning philosophy, decisions, debugging approaches, and architectural thinking — then builds a structured "second brain" knowledge base and holistic builder profile (engineer + PM + architect) with hybrid global/local memory injection.
 
 ## Problem
 
@@ -63,7 +63,8 @@ All agent prompts include explicit instructions to treat commit messages and dif
 - Accept one or more repo paths (comma-separated or space-separated)
 - For each repo: verify exists, has >0 commits, resolve absolute path, record HEAD hash
 - Derive `REPO_ID` from each repo's directory name
-- Check Python availability (for indexer)
+- Check Python availability (for indexer + verify scripts)
+- **Artifact discovery:** Scan each repo for docs/, .planning/, .claude/, .github/, root .md files, CLAUDE.md/AGENTS.md. Record each artifact with creation date (via `git log --diff-filter=A`), sorted chronologically — creation order reveals thinking hierarchy.
 - If total commits across all repos >5000, suggest batch size 50 (default: 20)
 - Ask user for scope: `global`, `local`, or `hybrid` (default: `hybrid`)
 - Resolve all absolute paths: `WORK_DIR`, `OUTPUT_DIR`, `REPO_PATHS[]`, `REPO_IDS[]`
@@ -89,6 +90,21 @@ All agent prompts include explicit instructions to treat commit messages and dif
 
 **Phase 1 completion verification:** Count batch files AND verify each has expected number of `## Commit:` headers. Re-spawn agents for incomplete batches only.
 
+### Phase 1A: HARVEST ARTIFACTS
+
+**Goal:** Mine non-code artifacts (design specs, planning docs, project instructions, memory files) for product thinking, planning philosophy, and workflow patterns.
+
+**Mechanism:** Background subagent with `artifact-harvest-prompt.md`
+
+- Reads each discovered artifact file directly (not via git show)
+- Checks `git log --follow` for each file to understand evolution (revision count, creation date, last modified)
+- Extracts: product thinking, planning philosophy, values/non-negotiables, communication style, process patterns
+- Tags findings with category slugs (product-thinking, workflow, plus any relevant code categories)
+- Writes to `scratchpad/artifacts-<REPO_ID>.md` using same format as commit findings
+- **Chronological ordering:** processes artifacts by creation date to capture the hierarchy of thinking
+
+**Why this matters:** Git commits show what someone coded. Artifacts show how they THINK about what to build, how they plan, how they communicate. Design specs reveal trade-off analysis. Planning docs reveal decomposition philosophy. CLAUDE.md reveals non-negotiables. Together, these make the difference between a "developer brain" and a complete "builder brain" — PM + architect + engineer.
+
 ### Phase 1.5: INDEX
 
 **Goal:** Split scratchpad findings by category tag for efficient Phase 2 processing.
@@ -96,7 +112,7 @@ All agent prompts include explicit instructions to treat commit messages and dif
 **Mechanism:** Python indexer script (`scripts/indexer.py`)
 
 The indexer:
-- Reads all `batch-*.md` files from scratchpad directory
+- Reads all scratchpad files (`batch-*.md` + `artifacts-*.md`) from scratchpad directory
 - Uses fuzzy tag matching (normalizes hyphens/underscores/spaces) to handle agent tag variations
 - Assigns **untagged commits to an `uncategorized` bucket** (NOT to all categories — this was a critical design fix)
 - Produces per-category `<slug>-raw.md` files in the indexed directory
@@ -106,15 +122,15 @@ The indexer:
 
 **Bash fallback:** If Python unavailable, approximate splitting via grep (less accurate, documented as fallback).
 
-### Phase 2: CATEGORIZE — 10 Subagents in 2 Waves
+### Phase 2: CATEGORIZE — 12 Subagents in 2 Waves
 
-**Goal:** Organize raw findings into 10 knowledge categories.
+**Goal:** Organize raw findings into 12 knowledge categories.
 
-**Mechanism:** Background subagents in **two waves of 5** (prevents resource exhaustion)
+**Mechanism:** Background subagents in **two waves of 6** (prevents resource exhaustion)
 
-- Wave 1: architecture, tech-stack, debugging, scaling, security
-- Wave 2: data-modeling, code-style, refactoring, integration, error-handling
-- Each wave: spawn 5 background agents, collect agent IDs, poll with `TaskOutput` until all complete
+- Wave 1: architecture, tech-stack, debugging, scaling, security, product-thinking
+- Wave 2: data-modeling, code-style, refactoring, integration, error-handling, workflow
+- Each wave: spawn 6 background agents, collect agent IDs, poll with `TaskOutput` until all complete
 
 Each category agent:
 1. Reads its pre-indexed file from `$WORK_DIR/indexed/<slug>-raw.md` (NOT all scratchpad files)
@@ -123,14 +139,18 @@ Each category agent:
 4. Writes organized output to `$WORK_DIR/categories/<slug>.md`
 5. If fewer than 3 findings, notes "No significant patterns detected"
 
-After both waves: verify all 10 category files exist. Re-spawn failed agents individually.
+**New categories:**
+- `product-thinking`: Feature scoping, requirements analysis, trade-off decisions, roadmap priorities, user-centric design choices, what was built vs explicitly rejected
+- `workflow`: Planning patterns, process decisions, communication style, documentation habits, tool/system choices, review processes, how work is broken down and sequenced
+
+After both waves: verify all 12 category files exist. Re-spawn failed agents individually.
 
 ### Phase 3: SYNTHESIZE — 3 Sequential Subagents
 
 **Goal:** Build the final second brain output.
 
 **Agent 1: Brain Builder**
-- Reads all 10 category files (skips missing/empty ones gracefully)
+- Reads all 12 category files (skips missing/empty ones gracefully)
 - Creates the `second-brain/` directory structure
 - Writes organized pattern files, playbooks, decision logs
 - Uses pre-computed `statistics-raw.md` for `raw/statistics.md` (does NOT read scratchpad files)
@@ -141,7 +161,7 @@ After both waves: verify all 10 category files exist. Re-spawn failed agents ind
   ```
 
 **Agent 2: Profile Generator**
-- Reads all 10 category files + config (for brain name)
+- Reads all 12 category files + config (for brain name)
 - Writes profile incrementally (scratchpad discipline against context compression)
 - Generates `second-brain/profile/engineer-profile.md`
 
@@ -200,6 +220,9 @@ second-brain/
 │   ├── integration-patterns.md
 │   ├── error-handling-patterns.md
 │   └── refactoring-patterns.md
+├── philosophy/
+│   ├── product-thinking.md
+│   └── workflow.md
 ├── decisions/
 │   └── tech-decisions.md
 ├── conventions/
@@ -233,15 +256,47 @@ On skill invocation, check for existing `progress.md`:
 - Resume from the **first unchecked item**
 - Harvest agents also check for existing partial scratchpad files and continue from last recorded commit
 
-### Hooks
+### Hooks (6 Runtime Enforcement Hooks)
+
+All hooks use `$CLAUDE_PROJECT_DIR` (with `$PWD` fallback) for reliable project root detection, and `$CLAUDE_PLUGIN_ROOT` for portable script paths.
 
 ```yaml
 hooks:
+  PreToolUse:
+    - matcher: "Write|Edit"
+      script: validate-write-paths.sh
+      # Validates: files go to absolute paths under WORK_DIR or OUTPUT_DIR,
+      # scratchpad filenames follow batch-<REPO_ID>-NNN-commits-X-Y.md convention
+    - matcher: "Bash"
+      inline: warn if bash commands use relative paths (./second-brain/, ./.second-brain/)
+  PostToolUse:
+    - matcher: "Write"
+      script: validate-scratchpad-output.sh
+      # Validates: scratchpad files contain ## Commit: headers
+  SubagentStop:
+    - script: validate-agent-completion.sh
+      # Checks: expected output files exist, progress.md updated
   Stop:
-    - command: "bash -c 'test -f second-brain/profile/engineer-profile.md && echo ok || (echo \"Profile not generated\" >&2 && exit 2)'"
+    - inline: >
+        Blocks stop if engineer-profile.md missing at $OUTPUT_DIR/profile/
+        or progress.md has unchecked items
   PreCompact:
-    - command: "bash -c 'echo \"Context compacting. Ensure all findings written to scratchpad files.\"'"
+    - inline: "Reminds orchestrator to re-read config.md and progress.md to restore state"
 ```
+
+### Progress Monitoring Loops
+
+Phase 1 and Phase 2 each use `CronCreate` with `*/2 * * * *` to poll for completion:
+- Phase 1: counts scratchpad files vs expected batch count
+- Phase 2: counts category files vs 12 expected
+- Cron IDs persisted to `config.md` for crash recovery cleanup via `CronDelete`
+
+### Post-Run Verification
+
+`scripts/verify.py` performs 12 automated checks after Phase 3:
+- Config completeness, commit file existence, scratchpad batch counts
+- Indexed file existence, category file counts, output directory structure
+- Profile generation, commit hash traceability, statistics presence
 
 ---
 
@@ -270,7 +325,7 @@ hooks:
 ## Success Criteria
 
 1. Every commit accounted for — commits with diffs fully analyzed, merge/empty/binary commits logged
-2. All 10 knowledge categories have organized findings
+2. All 12 knowledge categories have organized findings
 3. Engineer profile accurately reflects patterns from the codebase (across all repos if multi-repo)
 4. Claude memory files enable future sessions to think like the engineer
 5. **Multi-repo**: Cross-repo patterns detected (e.g., "always updates frontend types when backend API changes")

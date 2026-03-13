@@ -1,12 +1,60 @@
 {
+  "description": "Build Second Brain — runtime enforcement hooks for path validation, output structure, and progress tracking",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/validate-write-paths.sh\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'PD=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; if [ -f \"$PD/.second-brain/config.md\" ]; then input=$(cat); cmd=$(printf \"%s\\n\" \"$input\" | jq -r \".tool_input.command // empty\"); if echo \"$cmd\" | grep -qE \"\\./\\.second-brain/|\\./second-brain/\"; then echo \"WARN: Relative path in bash command. Use absolute paths from config.md.\" >&2; exit 2; fi; fi; exit 0'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/validate-scratchpad-output.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PLUGIN_ROOT/hooks/scripts/validate-agent-completion.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'test -f \"$PWD/second-brain/profile/engineer-profile.md\" && echo ok || (echo \"Profile not generated\" >&2 && exit 2)'"
+            "command": "bash -c 'PD=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; if [ -f \"$PD/.second-brain/config.md\" ]; then profile=\"$PD/second-brain/profile/engineer-profile.md\"; progress=\"$PD/.second-brain/progress.md\"; errors=\"\"; if [ ! -f \"$profile\" ]; then errors=\"Profile not generated at $profile.\"; fi; if [ -f \"$progress\" ] && grep -qE \"^[[:space:]]*- \\[ \\]\" \"$progress\"; then errors=\"$errors Incomplete items in progress.md.\"; fi; if [ -n \"$errors\" ]; then echo \"STOP BLOCKED: $errors\" >&2; exit 2; fi; echo \"Build complete — all checks passed.\"; fi; exit 0'",
+            "timeout": 10
           }
         ]
       }
@@ -17,7 +65,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'echo \"Context compacting — all findings should already be in scratchpad files on disk.\"'"
+            "command": "bash -c 'PD=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; if [ -f \"$PD/.second-brain/config.md\" ]; then echo \"Context compacting — re-read $PD/.second-brain/config.md and $PD/.second-brain/progress.md to restore state. All findings are in scratchpad files on disk.\"; else echo \"Context compacting — all findings should already be in scratchpad files on disk.\"; fi'",
+            "timeout": 5
           }
         ]
       }

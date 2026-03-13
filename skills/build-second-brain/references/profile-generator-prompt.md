@@ -20,7 +20,7 @@ Write the profile file incrementally — write each section as you complete it r
 
 ## Process
 
-1. Read ALL 10 category files from `{{CATEGORIES_DIR}}`
+1. Read ALL 12 category files from `{{CATEGORIES_DIR}}`
    - If a file is missing or says "No significant patterns detected," note it and move on
 2. Synthesize a complete engineer profile
 3. Write to `{{OUTPUT_DIR}}/profile/engineer-profile.md`
@@ -28,13 +28,18 @@ Write the profile file incrementally — write each section as you complete it r
 ## The Profile Must Capture
 
 This profile should allow any AI (Claude, GPT, Codex) to read it and immediately understand:
-- How this engineer thinks about architecture
+- How this person thinks about products and features (not just code)
+- How they break down problems and plan work
+- How they think about architecture and system design
 - What they reach for first when building systems
 - How they debug problems
 - What they consider non-negotiable
 - Where they're flexible vs rigid
 - How their approach evolved over time
+- How they communicate and document decisions
 - **If multi-repo**: How patterns differ or align across repos (e.g., "strict typing in backend, looser in frontend")
+
+**IMPORTANT:** This is not just a developer brain. It's the combined brain of a product thinker, architect, and engineer. Capture all three dimensions.
 
 ## Output Template
 
@@ -50,7 +55,7 @@ This profile should allow any AI (Claude, GPT, Codex) to read it and immediately
 ---
 
 ## Core Philosophy
-<3-5 bullet points capturing fundamental beliefs about software>
+<3-5 bullet points capturing fundamental beliefs about building — not just code, but products and systems>
 
 ## Tech Stack DNA
 **Backend**: <framework/language preference>
@@ -86,6 +91,19 @@ This profile should allow any AI (Claude, GPT, Codex) to read it and immediately
 - Authorization: <approach>
 - Input validation: <approach>
 - Secrets management: <approach>
+
+## Product Thinking
+- **Scoping approach**: <how they define what to build — top-down from user needs or bottom-up from components?>
+- **Trade-off style**: <how they balance scope, quality, speed — what do they cut first?>
+- **What they say no to**: <patterns of what they explicitly reject or defer>
+- **Planning granularity**: <big-picture phases or detailed task lists? upfront or iterative?>
+- **Documentation philosophy**: <when and why they write docs — audience, detail level>
+
+## Workflow & Process
+- **How they break down work**: <phases, sprints, incremental? research-first or dive-in?>
+- **Communication style**: <terse or detailed? structured or narrative? tables vs prose?>
+- **Tools & systems**: <what tools they use and why — reveals process values>
+- **Review expectations**: <what they expect in PRs, code reviews, specs>
 
 ## Code Style Signature
 - Naming: <conventions>

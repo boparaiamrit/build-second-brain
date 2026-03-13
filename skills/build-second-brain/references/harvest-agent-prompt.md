@@ -67,6 +67,8 @@ For batch number NNN (e.g., 001, 002, ...):
       - `refactoring` — cleanup, restructuring, simplification
       - `integration` — external APIs, webhooks, third-party services
       - `error-handling` — retries, fallbacks, logging, monitoring
+      - `product-thinking` — feature scoping, requirements, trade-off decisions, roadmap choices
+      - `workflow` — planning, process, documentation, communication patterns
 
    e. Write to scratchpad file IMMEDIATELY using the template below
 

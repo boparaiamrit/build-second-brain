@@ -20,6 +20,9 @@ Started: 2026-03-13T10:00:00
 - [ ] batch-myapp-002 (commits 21-40)
 - [ ] batch-myapp-003 (commits 41-60)
 
+## Phase 1A: Harvest Artifacts
+- [ ] artifact-harvest (if artifacts discovered)
+
 ## Phase 1.5: Index
 - [ ] Pre-categorization indexing
 
@@ -34,6 +37,8 @@ Started: 2026-03-13T10:00:00
 - [ ] refactoring
 - [ ] integration
 - [ ] error-handling
+- [ ] product-thinking
+- [ ] workflow
 
 ## Phase 3: Synthesize
 - [ ] brain-builder
@@ -70,6 +75,9 @@ Started: 2026-03-13T10:00:00
 ...
 - [ ] batch-my-frontend-015 (commits 281-300)
 
+## Phase 1A: Harvest Artifacts
+- [ ] artifact-harvest (if artifacts discovered)
+
 ## Phase 1.5: Index
 - [ ] Pre-categorization indexing
 
@@ -84,6 +92,8 @@ Started: 2026-03-13T10:00:00
 - [ ] refactoring
 - [ ] integration
 - [ ] error-handling
+- [ ] product-thinking
+- [ ] workflow
 
 ## Phase 3: Synthesize
 - [ ] brain-builder

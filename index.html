@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Second Brain — Claude Code Plugin</title>
+  <meta name="description" content="Turn your git history into an AI that thinks like you. A Claude Code plugin that mines every commit, design spec, and planning doc to build your second brain.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-main: #0a0a0f;
+      --bg-card: #0d0d14;
+      --bg-sidebar: #08080c;
+      --bg-hover: #111118;
+      --accent-green: #4ade80;
+      --accent-green-dim: #22c55e;
+      --accent-cyan: #22d3ee;
+      --accent-purple: #a78bfa;
+      --accent-amber: #fbbf24;
+      --accent-rose: #fb7185;
+      --accent-blue: #60a5fa;
+      --accent-orange: #fb923c;
+      --text-primary: #e2e8f0;
+      --text-dimmed: #94a3b8;
+      --text-muted: #64748b;
+      --border: #1e293b;
+      --border-hover: #334155;
+      --radius: 8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+
+    /* CRT scan lines */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0.02;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    a { color: var(--accent-green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 280px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-brand {
+      font-family: 'Space Mono', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      margin-bottom: 4px;
+    }
+
+    .sidebar-sub {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .sidebar-nav { list-style: none; }
+
+    .sidebar-nav li { margin-bottom: 2px; }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--text-dimmed);
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .sidebar-nav a:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .sidebar-nav a.active {
+      background: rgba(74, 222, 128, 0.08);
+      color: var(--accent-green);
+    }
+
+    .nav-count {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.05);
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .nav-section-title {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 16px 12px 6px;
+      font-weight: 600;
+    }
+
+    /* ─── MOBILE TOGGLE ─── */
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 12px; left: 12px;
+      z-index: 200;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--accent-green);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .main { margin-left: 280px; }
+
+    /* ─── HERO ─── */
+    .hero {
+      padding: 80px 60px 60px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: 20%;
+      width: 60%; height: 200%;
+      background: radial-gradient(ellipse at center, rgba(74, 222, 128, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      color: var(--accent-green);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      background: rgba(74, 222, 128, 0.06);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .hero h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .hero h1 span { color: var(--accent-green); }
+
+    .hero-tagline {
+      font-size: 0.9rem;
+      color: var(--text-dimmed);
+      max-width: 600px;
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      margin-bottom: 36px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .install-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      max-width: 100%;
+    }
+
+    .install-box code {
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      white-space: nowrap;
+    }
+
+    .install-box .prompt {
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dimmed);
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .copy-btn.copied {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    /* ─── SECTIONS ─── */
+    .section {
+      padding: 48px 60px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .section-title .accent { color: var(--accent-green); }
+
+    .section-desc {
+      font-size: 0.78rem;
+      color: var(--text-dimmed);
+      margin-bottom: 28px;
+      max-width: 700px;
+    }
+
+    /* ─── PIPELINE ─── */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .phase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phase-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .phase-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .phase-card:nth-child(1)::before { background: var(--accent-green); }
+    .phase-card:nth-child(2)::before { background: var(--accent-cyan); }
+    .phase-card:nth-child(3)::before { background: var(--accent-purple); }
+    .phase-card:nth-child(4)::before { background: var(--accent-amber); }
+    .phase-card:nth-child(5)::before { background: var(--accent-rose); }
+
+    .phase-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .phase-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .phase-card:nth-child(1) .phase-name { color: var(--accent-green); }
+    .phase-card:nth-child(2) .phase-name { color: var(--accent-cyan); }
+    .phase-card:nth-child(3) .phase-name { color: var(--accent-purple); }
+    .phase-card:nth-child(4) .phase-name { color: var(--accent-amber); }
+    .phase-card:nth-child(5) .phase-name { color: var(--accent-rose); }
+
+    .phase-desc {
+      font-size: 0.72rem;
+      color: var(--text-dimmed);
+      line-height: 1.5;
+    }
+
+    .phase-stat {
+      margin-top: 12px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .phase-stat strong { color: var(--text-dimmed); }
+
+    /* ─── CATEGORY GRID ─── */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .cat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      transition: all 0.2s;
+    }
+
+    .cat-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-hover);
+    }
+
+    .cat-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .cat-desc {
+      font-size: 0.7rem;
+      color: var(--text-dimmed);
+      line-height: 1.5;
+    }
+
+    .cat-tag {
+      display: inline-block;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .tag-code { background: rgba(74, 222, 128, 0.12); color: var(--accent-green); }
+    .tag-thinking { background: rgba(167, 139, 250, 0.12); color: var(--accent-purple); }
+    .tag-ops { background: rgba(34, 211, 238, 0.12); color: var(--accent-cyan); }
+    .tag-quality { background: rgba(251, 191, 36, 0.12); color: var(--accent-amber); }
+
+    /* ─── OUTPUT TREE ─── */
+    .output-tree {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      font-size: 0.78rem;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .output-tree .dir { color: var(--accent-cyan); font-weight: 600; }
+    .output-tree .file { color: var(--text-dimmed); }
+    .output-tree .comment { color: var(--text-muted); font-style: italic; }
+
+    /* ─── HOOKS TABLE ─── */
+    .hooks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 12px;
+    }
+
+    .hook-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      transition: all 0.2s;
+    }
+
+    .hook-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .hook-event {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-amber);
+      margin-bottom: 4px;
+    }
+
+    .hook-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .hook-desc {
+      font-size: 0.7rem;
+      color: var(--text-dimmed);
+      line-height: 1.5;
+    }
+
+    /* ─── FEATURES ─── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: all 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+
+    .feature-icon {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .feature-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      font-size: 0.7rem;
+      color: var(--text-dimmed);
+      line-height: 1.5;
+    }
+
+    /* ─── PROFILE PREVIEW ─── */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .profile-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+
+    .profile-dim {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .profile-what {
+      font-size: 0.7rem;
+      color: var(--text-dimmed);
+      line-height: 1.5;
+    }
+
+    /* ─── TOKEN TABLE ─── */
+    .token-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+
+    .token-table th {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+
+    .token-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+      color: var(--text-dimmed);
+    }
+
+    .token-table tr:hover td {
+      background: var(--bg-hover);
+    }
+
+    .token-table .total-col {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    /* ─── FOOTER ─── */
+    .footer {
+      padding: 40px 60px;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .footer a { color: var(--accent-green); }
+
+    /* ─── ANIMATIONS ─── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-toggle { display: block; }
+      .main { margin-left: 0; }
+      .hero { padding: 60px 24px 40px; }
+      .hero h1 { font-size: 1.6rem; }
+      .section { padding: 36px 24px; }
+      .footer { padding: 32px 24px; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-stats { gap: 20px; }
+      .stat-value { font-size: 1.4rem; }
+      .pipeline { grid-template-columns: 1fr; }
+      .cat-grid { grid-template-columns: 1fr; }
+      .hooks-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Mobile Toggle -->
+<button class="sidebar-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+  [=] Menu
+</button>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-brand">Build Second Brain</div>
+  <div class="sidebar-sub">Claude Code Plugin &middot; v1.0.0<br>by Amritpal Singh</div>
+
+  <ul class="sidebar-nav">
+    <li><a href="#hero" class="active">Overview</a></li>
+
+    <div class="nav-section-title">Architecture</div>
+    <li><a href="#pipeline">Pipeline <span class="nav-count">5 phases</span></a></li>
+    <li><a href="#categories">Categories <span class="nav-count">12</span></a></li>
+    <li><a href="#hooks">Hooks <span class="nav-count">6</span></a></li>
+
+    <div class="nav-section-title">Output</div>
+    <li><a href="#output">Knowledge Base</a></li>
+    <li><a href="#profile">Builder Profile</a></li>
+    <li><a href="#memory">Memory Injection</a></li>
+
+    <div class="nav-section-title">Details</div>
+    <li><a href="#features">Features <span class="nav-count">12</span></a></li>
+    <li><a href="#tokens">Token Estimates</a></li>
+    <li><a href="#structure">Plugin Structure</a></li>
+
+    <div class="nav-section-title">Links</div>
+    <li><a href="https://github.com/boparaiamrit/build-second-brain" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <span class="hero-badge">Claude Code Plugin</span>
+    <h1>Build <span>Second Brain</span></h1>
+    <p class="hero-tagline">
+      Turn your git history into an AI that thinks like you.
+      Mines every commit, design spec, planning doc, and project instruction —
+      builds a structured knowledge base and holistic builder profile.
+      Engineer + PM + Architect, combined.
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-value">12</span>
+        <span class="stat-label">Knowledge Categories</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">7</span>
+        <span class="stat-label">Agent Prompts</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">6</span>
+        <span class="stat-label">Runtime Hooks</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">5</span>
+        <span class="stat-label">Pipeline Phases</span>
+      </div>
+    </div>
+
+    <div class="install-box">
+      <code><span class="prompt">$</span> claude plugin add github.com/boparaiamrit/build-second-brain</code>
+      <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="section" id="pipeline">
+    <h2 class="section-title"><span class="accent">//</span> Pipeline</h2>
+    <p class="section-desc">Five phases transform raw git history and project artifacts into a structured second brain with Claude memory injection.</p>
+
+    <div class="pipeline fade-in">
+      <div class="phase-card">
+        <div class="phase-label">Phase 0</div>
+        <div class="phase-name">Preflight</div>
+        <div class="phase-desc">Validate repos, resolve absolute paths, detect Python, discover artifacts, confirm brain name and memory scope.</div>
+        <div class="phase-stat"><strong>Scans:</strong> repos, docs/, .planning/, .claude/, .github/, root .md files</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Phase 1 + 1A</div>
+        <div class="phase-name">Harvest</div>
+        <div class="phase-desc">5 parallel agent teammates analyze every commit via git show. Phase 1A mines non-code artifacts in chronological order.</div>
+        <div class="phase-stat"><strong>Output:</strong> batch-*.md + artifacts-*.md scratchpad files</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Phase 1.5</div>
+        <div class="phase-name">Index</div>
+        <div class="phase-desc">Python indexer splits all scratchpad findings by category tag using fuzzy matching. Pre-computes statistics.</div>
+        <div class="phase-stat"><strong>Output:</strong> 12 category-raw.md files + statistics-raw.md</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Phase 2</div>
+        <div class="phase-name">Categorize</div>
+        <div class="phase-desc">12 specialist agents in 2 waves of 6. Each reads pre-indexed content and organizes into patterns, principles, and decisions.</div>
+        <div class="phase-stat"><strong>Output:</strong> 12 organized category files</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Phase 3</div>
+        <div class="phase-name">Synthesize</div>
+        <div class="phase-desc">Brain Builder creates knowledge base. Profile Generator writes your DNA. Memory Injector persists to Claude memory.</div>
+        <div class="phase-stat"><strong>Output:</strong> second-brain/ directory + 3 memory files</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="section" id="categories">
+    <h2 class="section-title"><span class="accent">//</span> 12 Knowledge Categories</h2>
+    <p class="section-desc">Every commit and artifact is tagged with one or more categories. Phase 2 agents specialize in exactly one category each.</p>
+
+    <div class="cat-grid fade-in">
+      <div class="cat-card">
+        <span class="cat-tag tag-code">Code</span>
+        <div class="cat-name">architecture</div>
+        <div class="cat-desc">System design, module boundaries, layering decisions, dependency management</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-code">Code</span>
+        <div class="cat-name">tech-stack</div>
+        <div class="cat-desc">Language, framework, and tool choices with rationale</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-ops">Ops</span>
+        <div class="cat-name">debugging</div>
+        <div class="cat-desc">Diagnostic approaches, root cause analysis, investigation patterns</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-ops">Ops</span>
+        <div class="cat-name">scaling</div>
+        <div class="cat-desc">Performance optimization, growth handling, resource management</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-ops">Ops</span>
+        <div class="cat-name">security</div>
+        <div class="cat-desc">Auth patterns, validation, encryption, access control</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-code">Code</span>
+        <div class="cat-name">data-modeling</div>
+        <div class="cat-desc">Schema design, migrations, relationships, query patterns</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-quality">Quality</span>
+        <div class="cat-name">code-style</div>
+        <div class="cat-desc">Naming conventions, formatting preferences, structural patterns</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-quality">Quality</span>
+        <div class="cat-name">refactoring</div>
+        <div class="cat-desc">Cleanup patterns, tech debt management, incremental improvement</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-code">Code</span>
+        <div class="cat-name">integration</div>
+        <div class="cat-desc">API design, service communication, third-party integrations</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-ops">Ops</span>
+        <div class="cat-name">error-handling</div>
+        <div class="cat-desc">Retry logic, fallbacks, circuit breakers, resilience patterns</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-thinking">Thinking</span>
+        <div class="cat-name">product-thinking</div>
+        <div class="cat-desc">Feature scoping, requirements analysis, trade-off decisions, what gets built vs rejected</div>
+      </div>
+      <div class="cat-card">
+        <span class="cat-tag tag-thinking">Thinking</span>
+        <div class="cat-name">workflow</div>
+        <div class="cat-desc">Planning patterns, communication style, documentation habits, process decisions</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUTPUT -->
+  <section class="section" id="output">
+    <h2 class="section-title"><span class="accent">//</span> Knowledge Base Output</h2>
+    <p class="section-desc">The final second-brain/ directory contains organized patterns, playbooks, decisions, and raw data.</p>
+
+    <div class="output-tree fade-in">
+      <span class="dir">second-brain/</span><br>
+      &nbsp;&nbsp;<span class="dir">profile/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">engineer-profile.md</span> <span class="comment">// Your complete builder DNA</span><br>
+      &nbsp;&nbsp;<span class="dir">patterns/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">architecture-patterns.md</span> <span class="comment">// System design patterns</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">scaling-patterns.md</span> <span class="comment">// How you handle growth</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">debugging-patterns.md</span> <span class="comment">// How you diagnose bugs</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">security-patterns.md</span> <span class="comment">// Auth & validation approach</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">data-modeling-patterns.md</span> <span class="comment">// Schema & migration patterns</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">integration-patterns.md</span> <span class="comment">// API & service connections</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">error-handling-patterns.md</span> <span class="comment">// Retry & resilience</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">refactoring-patterns.md</span> <span class="comment">// Cleanup patterns</span><br>
+      &nbsp;&nbsp;<span class="dir">philosophy/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">product-thinking.md</span> <span class="comment">// Feature scoping & trade-offs</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">workflow.md</span> <span class="comment">// Planning & process patterns</span><br>
+      &nbsp;&nbsp;<span class="dir">decisions/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">tech-decisions.md</span> <span class="comment">// Every tech choice with reasoning</span><br>
+      &nbsp;&nbsp;<span class="dir">conventions/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">code-style.md</span> <span class="comment">// Naming & structure conventions</span><br>
+      &nbsp;&nbsp;<span class="dir">evolution/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">architecture-evolution.md</span> <span class="comment">// How the system evolved</span><br>
+      &nbsp;&nbsp;<span class="dir">playbooks/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">debugging-playbook.md</span> <span class="comment">// Step-by-step guide</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">scaling-playbook.md</span> <span class="comment">// Step-by-step guide</span><br>
+      &nbsp;&nbsp;<span class="dir">raw/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">commit-log.md</span> <span class="comment">// Annotated commit history</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">statistics.md</span> <span class="comment">// Numbers breakdown</span><br>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="section" id="profile">
+    <h2 class="section-title"><span class="accent">//</span> Holistic Builder Profile</h2>
+    <p class="section-desc">Not just a developer brain — the combined brain of a product thinker, architect, and engineer. One document that captures your complete DNA.</p>
+
+    <div class="profile-grid fade-in">
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-green)">Core Philosophy</div>
+        <div class="profile-what">Fundamental beliefs about building products, systems, and code</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-cyan)">Tech Stack DNA</div>
+        <div class="profile-what">Go-to technology choices and why you pick them</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-purple)">Architecture Fingerprint</div>
+        <div class="profile-what">How you structure systems and make design trade-offs</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-amber)">Debugging Style</div>
+        <div class="profile-what">Your step-by-step diagnostic process</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-rose)">Decision Patterns</div>
+        <div class="profile-what">When faced with X, you choose Y because Z</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-orange)">Non-Negotiables</div>
+        <div class="profile-what">Things you ALWAYS or NEVER do</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-blue)">Product Thinking</div>
+        <div class="profile-what">How you scope features, analyze trade-offs, say no</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-cyan)">Workflow & Process</div>
+        <div class="profile-what">How you plan, communicate, break down work</div>
+      </div>
+      <div class="profile-item">
+        <div class="profile-dim" style="color: var(--accent-green)">Evolution</div>
+        <div class="profile-what">How your thinking changed over time</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEMORY -->
+  <section class="section" id="memory">
+    <h2 class="section-title"><span class="accent">//</span> Claude Memory Injection</h2>
+    <p class="section-desc">Three memory files injected into Claude Code so every future session already knows how you think.</p>
+
+    <div class="pipeline fade-in" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <div class="phase-card">
+        <div class="phase-label">User Memory</div>
+        <div class="phase-name" style="color: var(--accent-green)">second-brain-profile.md</div>
+        <div class="phase-desc">Core identity — philosophy, tech stack defaults, architecture fingerprint, debugging style</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Feedback Memory</div>
+        <div class="phase-name" style="color: var(--accent-cyan)">second-brain-patterns.md</div>
+        <div class="phase-desc">Patterns to follow — architecture, product thinking, workflow, scaling, error handling</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label">Feedback Memory</div>
+        <div class="phase-name" style="color: var(--accent-purple)">second-brain-decisions.md</div>
+        <div class="phase-desc">Decision rules — tech stack defaults, non-negotiables, when-X-choose-Y rules</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.75rem; color: var(--text-dimmed);">
+      <strong style="color: var(--accent-amber)">Hybrid mode</strong> also appends a concise brain summary to <code style="color: var(--accent-green)">~/.claude/CLAUDE.md</code> — loaded in every Claude session globally.
+    </div>
+  </section>
+
+  <!-- HOOKS -->
+  <section class="section" id="hooks">
+    <h2 class="section-title"><span class="accent">//</span> 6 Runtime Hooks</h2>
+    <p class="section-desc">Event-driven enforcement that keeps the build honest — validates paths, checks output structure, and prevents premature completion.</p>
+
+    <div class="hooks-grid fade-in">
+      <div class="hook-card">
+        <div class="hook-event">PreToolUse &middot; Write|Edit</div>
+        <div class="hook-name">Path Validator</div>
+        <div class="hook-desc">Ensures files go to correct absolute paths under WORK_DIR or OUTPUT_DIR. Validates batch and artifact filename conventions.</div>
+      </div>
+      <div class="hook-card">
+        <div class="hook-event">PreToolUse &middot; Bash</div>
+        <div class="hook-name">Relative Path Warner</div>
+        <div class="hook-desc">Warns if bash commands use relative paths (./.second-brain/) instead of absolute paths from config.md.</div>
+      </div>
+      <div class="hook-card">
+        <div class="hook-event">PostToolUse &middot; Write</div>
+        <div class="hook-name">Scratchpad Validator</div>
+        <div class="hook-desc">Verifies scratchpad files contain proper ## Commit: or ## Artifact: headers with category tags.</div>
+      </div>
+      <div class="hook-card">
+        <div class="hook-event">SubagentStop</div>
+        <div class="hook-name">Completion Checker</div>
+        <div class="hook-desc">Counts batch files, artifact files, and category files. Reports build progress on every agent completion.</div>
+      </div>
+      <div class="hook-card">
+        <div class="hook-event">Stop</div>
+        <div class="hook-name">Stop Guard</div>
+        <div class="hook-desc">Blocks session stop if engineer-profile.md is missing or progress.md has unchecked items.</div>
+      </div>
+      <div class="hook-card">
+        <div class="hook-event">PreCompact</div>
+        <div class="hook-name">Compact Reminder</div>
+        <div class="hook-desc">Reminds orchestrator to re-read config.md and progress.md after context compression to restore state.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <h2 class="section-title"><span class="accent">//</span> Features</h2>
+    <p class="section-desc">Built for production-grade reliability at any repo scale.</p>
+
+    <div class="features-grid fade-in">
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-green)">&#9632;</span>
+        <div class="feature-name">Every Commit Analyzed</div>
+        <div class="feature-desc">Zero skipped. Merge commits, empty commits, and binary-only commits are logged appropriately.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-cyan)">&#9632;</span>
+        <div class="feature-name">Multi-Repo Support</div>
+        <div class="feature-desc">Analyze multiple repos together. Cross-repo pattern detection with per-repo attribution.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-purple)">&#9632;</span>
+        <div class="feature-name">Artifact Mining</div>
+        <div class="feature-desc">Harvests design specs, planning docs, CLAUDE.md, ADRs, PR templates. Chronological order reveals thinking hierarchy.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-amber)">&#9632;</span>
+        <div class="feature-name">Maximum Parallelism</div>
+        <div class="feature-desc">5 teammate agents for harvest + 12 parallel category agents in 2 waves of 6.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-rose)">&#9632;</span>
+        <div class="feature-name">Crash-Proof</div>
+        <div class="feature-desc">Scratchpad persistence on disk. Resume from where you left off after any interruption.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-orange)">&#9632;</span>
+        <div class="feature-name">Large Diff Handling</div>
+        <div class="feature-desc">Commits with 500+ line diffs fall back to git show --stat with selective inspection. Binary files skipped.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-blue)">&#9632;</span>
+        <div class="feature-name">Hybrid Memory</div>
+        <div class="feature-desc">Global identity in ~/.claude/CLAUDE.md + local detailed files in project memory directory.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-green)">&#9632;</span>
+        <div class="feature-name">Data Isolation</div>
+        <div class="feature-desc">All agent prompts treat commit content as untrusted data. Prevents prompt injection via malicious commits.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-cyan)">&#9632;</span>
+        <div class="feature-name">Python Fallback</div>
+        <div class="feature-desc">Detects python3 or python with bash fallback indexer if Python is unavailable.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-purple)">&#9632;</span>
+        <div class="feature-name">Post-Run Verification</div>
+        <div class="feature-desc">verify.py runs 12+ automated checks on the final output — config, coverage, structure, profile quality.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-amber)">&#9632;</span>
+        <div class="feature-name">Configurable Batch Size</div>
+        <div class="feature-desc">20 commits per batch (default). Auto-suggests 50 for repos with 5000+ commits.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-rose)">&#9632;</span>
+        <div class="feature-name">Progress Monitoring</div>
+        <div class="feature-desc">Cron-based real-time progress tracking. Checkboxes for every item in every phase.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOKENS -->
+  <section class="section" id="tokens">
+    <h2 class="section-title"><span class="accent">//</span> Token Estimates</h2>
+    <p class="section-desc">Approximate token usage by repo size and phase.</p>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;" class="fade-in">
+      <table class="token-table">
+        <thead>
+          <tr>
+            <th>Repo Size</th>
+            <th>Harvest</th>
+            <th>Categorize</th>
+            <th>Synthesize</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>100 commits</td>
+            <td>200K-500K</td>
+            <td>~50K</td>
+            <td>~50K</td>
+            <td class="total-col">~300K-600K</td>
+          </tr>
+          <tr>
+            <td>500 commits</td>
+            <td>1M-2.5M</td>
+            <td>~250K</td>
+            <td>~100K</td>
+            <td class="total-col">~1.5M-3M</td>
+          </tr>
+          <tr>
+            <td>1,000 commits</td>
+            <td>2M-5M</td>
+            <td>~500K</td>
+            <td>~200K</td>
+            <td class="total-col">~3M-6M</td>
+          </tr>
+          <tr>
+            <td>5,000 commits</td>
+            <td>10M-25M</td>
+            <td>~2M</td>
+            <td>~500K</td>
+            <td class="total-col">~13M-28M</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- STRUCTURE -->
+  <section class="section" id="structure">
+    <h2 class="section-title"><span class="accent">//</span> Plugin Structure</h2>
+    <p class="section-desc">Complete file layout of the plugin.</p>
+
+    <div class="output-tree fade-in">
+      <span class="dir">second-brain/</span><br>
+      &nbsp;&nbsp;<span class="dir">.claude-plugin/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">plugin.json</span> <span class="comment">// Plugin manifest</span><br>
+      &nbsp;&nbsp;<span class="dir">skills/build-second-brain/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">SKILL.md</span> <span class="comment">// Main orchestrator (600+ lines)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">references/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">harvest-agent-prompt.md</span> <span class="comment">// Phase 1: commit analysis</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">artifact-harvest-prompt.md</span> <span class="comment">// Phase 1A: artifact mining</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">category-agent-prompt.md</span> <span class="comment">// Phase 2: category specialist</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">brain-builder-prompt.md</span> <span class="comment">// Phase 3: knowledge base</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">profile-generator-prompt.md</span> <span class="comment">// Phase 3: engineer profile</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">memory-injector-prompt.md</span> <span class="comment">// Phase 3: memory injection</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">progress-template.md</span> <span class="comment">// Progress tracking</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">scripts/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">indexer.py</span> <span class="comment">// Category indexer (fuzzy matching)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">verify.py</span> <span class="comment">// Post-run verification (12+ checks)</span><br>
+      &nbsp;&nbsp;<span class="dir">hooks/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">hooks.json</span> <span class="comment">// 6 runtime enforcement hooks</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">scripts/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">validate-write-paths.sh</span> <span class="comment">// Path & filename validation</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">validate-scratchpad-output.sh</span> <span class="comment">// Output structure validation</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">validate-agent-completion.sh</span> <span class="comment">// Completion progress check</span><br>
+      &nbsp;&nbsp;<span class="file">index.html</span> <span class="comment">// This documentation page</span><br>
+      &nbsp;&nbsp;<span class="file">README.md</span><br>
+      &nbsp;&nbsp;<span class="file">LICENSE</span> <span class="comment">// MIT</span><br>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>
+      <strong style="color: var(--text-primary)">Build Second Brain</strong> &middot; v1.0.0 &middot;
+      <a href="https://github.com/boparaiamrit/build-second-brain">GitHub</a> &middot;
+      <a href="https://github.com/boparaiamrit">@boparaiamrit</a> &middot;
+      MIT License
+    </p>
+    <p style="margin-top: 8px;">
+      Built with <a href="https://claude.ai/claude-code">Claude Code</a> &middot; Made with intensity in Canada
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  // Copy install command
+  function copyInstall(btn) {
+    navigator.clipboard.writeText('claude plugin add github.com/boparaiamrit/build-second-brain');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 1500);
+  }
+
+  // Scroll-based fade-in
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Active nav tracking
+  const sections = document.querySelectorAll('section[id], .hero[id]');
+  const navLinks = document.querySelectorAll('.sidebar-nav a[href^="#"]');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const top = section.offsetTop - 100;
+      if (window.scrollY >= top) {
+        current = section.getAttribute('id');
+      }
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  });
+
+  // Close mobile sidebar on link click
+  document.querySelectorAll('.sidebar-nav a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 1024) {
+        document.querySelector('.sidebar').classList.remove('open');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

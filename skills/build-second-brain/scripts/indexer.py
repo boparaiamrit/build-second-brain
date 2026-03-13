@@ -2,9 +2,10 @@
 """
 Second Brain Indexer — Phase 1.5
 
-Reads all scratchpad batch files and splits commit findings by category tag
-into per-category indexed files. This ensures each Phase 2 category agent
-only reads its own relevant content (~1/10th of total), preventing context overflow.
+Reads all scratchpad files (commit batches + artifact findings) and splits
+findings by category tag into per-category indexed files. This ensures each
+Phase 2 category agent only reads its own relevant content (~1/12th of total),
+preventing context overflow.
 
 Also produces statistics-raw.md with pre-computed counts for Phase 3.
 
@@ -18,11 +19,9 @@ Example:
 from __future__ import annotations
 
 import sys
-import os
 import re
 from pathlib import Path
 from collections import defaultdict
-from datetime import datetime
 
 CATEGORIES = [
     "architecture",
@@ -35,6 +34,8 @@ CATEGORIES = [
     "refactoring",
     "integration",
     "error-handling",
+    "product-thinking",
+    "workflow",
 ]
 
 # Normalized lookup: remove hyphens/underscores/spaces for fuzzy matching
@@ -49,24 +50,33 @@ def normalize_tag(tag: str) -> str:
 
 
 def extract_repo_id_from_filename(filename: str) -> str:
-    """Extract repo ID from batch filename like batch-my-backend-001-commits-1-20.md."""
-    # Pattern: batch-<REPO_ID>-NNN-commits-X-Y.md
-    # Also handles legacy: batch-NNN-commits-X-Y.md (no repo ID)
-    match = re.match(r"batch-(.+?)-\d{3}-commits-", filename)
-    if match:
-        return match.group(1)
+    """Extract repo ID from scratchpad filename.
+
+    Handles:
+      batch-my-backend-001-commits-1-20.md  → my-backend
+      batch-001-commits-1-20.md             → default (legacy, no repo ID)
+      artifacts-my-backend.md               → my-backend
+    """
+    # Artifact files: artifacts-<REPO_ID>.md
+    artifact_match = re.match(r"artifacts-(.+)\.md$", filename)
+    if artifact_match:
+        return artifact_match.group(1)
+    # Batch files: batch-<REPO_ID>-NNN-commits-X-Y.md
+    batch_match = re.match(r"batch-(.+)-\d{3}-commits-", filename)
+    if batch_match:
+        return batch_match.group(1)
     return "default"
 
 
-def parse_commits(content: str, source_repo_id: str = "default") -> list:
-    """Parse a scratchpad file into individual commit sections."""
+def parse_entries(content: str, source_repo_id: str = "default") -> list:
+    """Parse a scratchpad file into individual finding sections (commits or artifacts)."""
     commits = []
-    # Split on ## Commit: headers
-    sections = re.split(r"(?=^## Commit: )", content, flags=re.MULTILINE)
+    # Split on ## Commit: or ## Artifact: headers
+    sections = re.split(r"(?=^## (?:Commit|Artifact): )", content, flags=re.MULTILINE)
 
     for section in sections:
         section = section.strip()
-        if not section.startswith("## Commit:"):
+        if not (section.startswith("## Commit:") or section.startswith("## Artifact:")):
             continue
 
         # Extract repo ID from content (if present) or use source file's repo ID
@@ -74,7 +84,8 @@ def parse_commits(content: str, source_repo_id: str = "default") -> list:
         repo_id = repo_match.group(1).strip() if repo_match else source_repo_id
 
         # Extract date for timeline statistics
-        date_match = re.search(r"^Date:\s*(.+)$", section, re.MULTILINE)
+        # Commits use "Date:", artifacts use "Created:"
+        date_match = re.search(r"^(?:Date|Created):\s*(.+)$", section, re.MULTILINE)
         commit_date = date_match.group(1).strip() if date_match else ""
 
         # Extract category tags — handle multiple formats:
@@ -146,14 +157,16 @@ def main():
     repo_commit_counts = defaultdict(int)  # Per-repo commit tracking
     repo_ids_seen = set()
 
-    # Read all batch files in order
+    # Read all scratchpad files: commit batches + artifact findings
     batch_files = sorted(scratchpad_dir.glob("batch-*.md"))
+    artifact_files = sorted(scratchpad_dir.glob("artifacts-*.md"))
+    all_files = batch_files + artifact_files
 
-    if not batch_files:
-        print(f"Warning: No batch files found in {scratchpad_dir}")
+    if not all_files:
+        print(f"Warning: No scratchpad files found in {scratchpad_dir}")
         sys.exit(0)
 
-    for batch_file in batch_files:
+    for batch_file in all_files:
         try:
             content = batch_file.read_text(encoding="utf-8", errors="replace")
         except (PermissionError, OSError) as e:
@@ -164,7 +177,7 @@ def main():
         source_repo_id = extract_repo_id_from_filename(batch_file.name)
         # Register repo ID from filename even if batch has no parseable commits
         repo_ids_seen.add(source_repo_id)
-        commits = parse_commits(content, source_repo_id)
+        commits = parse_entries(content, source_repo_id)
 
         if not commits:
             print(
@@ -219,8 +232,9 @@ def main():
     with open(stats_file, "w", encoding="utf-8") as f:
         f.write("# Pre-Computed Statistics\n\n")
         f.write(f"## Totals\n")
-        f.write(f"- Total commits parsed: {total_commits}\n")
+        f.write(f"- Total entries parsed: {total_commits}\n")
         f.write(f"- Batch files processed: {len(batch_files)}\n")
+        f.write(f"- Artifact files processed: {len(artifact_files)}\n")
         f.write(f"- Repos analyzed: {len(repo_ids_seen)}\n")
         f.write(f"- Uncategorized commits: {untagged_count}\n\n")
 

@@ -1,7 +1,7 @@
 {
   "name": "build-second-brain",
   "version": "1.0.0",
-  "description": "Analyze a git repository commit-by-commit using parallel agent teams to extract engineering patterns, decisions, and build a structured second brain knowledge base with personalized engineer profile and Claude memory injection.",
+  "description": "Analyze one or more git repositories — commits, design specs, planning docs, project instructions — using parallel agent teams to extract engineering patterns, product thinking, planning philosophy, and decisions. Builds a structured second brain knowledge base with a holistic builder profile (engineer + PM + architect) and hybrid global/local Claude memory injection.",
   "author": {
     "name": "Amritpal Singh",
     "url": "https://github.com/boparaiamrit"
@@ -17,6 +17,12 @@
     "architecture",
     "commit-analysis",
     "parallel-agents",
-    "memory"
+    "memory",
+    "multi-repo",
+    "hybrid-memory",
+    "cross-repo",
+    "product-thinking",
+    "artifact-mining",
+    "philosophy"
   ]
 }

@@ -24,7 +24,7 @@ Claude Code has TWO persistence mechanisms:
 
 ## Scope Rules
 
-- **`global`**: Write a concise brain summary to `{{GLOBAL_CLAUDE_MD}}` (appended) + write all 3 detailed memory files to `{{LOCAL_MEMORY_DIR}}`
+- **`global`**: Write all 3 detailed memory files to `{{LOCAL_MEMORY_DIR}}` + write a concise brain summary to `{{GLOBAL_CLAUDE_MD}}` (appended). The "global" label means identity also goes global, not that local files are skipped.
 - **`local`**: Write all 3 memory files to `{{LOCAL_MEMORY_DIR}}` only. No global changes.
 - **`hybrid`** (default):
   - **Global** (`{{GLOBAL_CLAUDE_MD}}`): Append a concise "Second Brain" section with core identity, non-negotiables, and decision rules
@@ -59,7 +59,7 @@ type: user
 ```markdown
 ---
 name: {{BRAIN_NAME}} Engineering Patterns
-description: Key engineering patterns to follow when coding for {{BRAIN_NAME}} — extracted from git history
+description: Key patterns to follow when working for {{BRAIN_NAME}} — architecture, product thinking, workflow, and engineering patterns extracted from git history and project artifacts
 type: feedback
 ---
 
@@ -72,9 +72,15 @@ type: feedback
 **Error Handling Patterns:**
 - <pattern>: <when to apply>
 
-**Why:** These patterns are extracted from {{BRAIN_NAME}}'s actual codebase — proven approaches, not theory.
+**Product Thinking Patterns:**
+- <pattern>: <when to apply>
 
-**How to apply:** When making architecture, scaling, or error handling decisions, check these patterns first.
+**Workflow Patterns:**
+- <pattern>: <when to apply>
+
+**Why:** These patterns are extracted from {{BRAIN_NAME}}'s actual codebase and project artifacts — proven approaches, not theory.
+
+**How to apply:** When making architecture, product, or process decisions, check these patterns first. This brain covers engineer + PM + architect thinking.
 ```
 
 ### File 3: `second-brain-decisions.md`
@@ -105,7 +111,7 @@ type: feedback
 
 ## Global CLAUDE.md Section (written when scope is `global` or `hybrid`)
 
-**IMPORTANT:** Read `{{GLOBAL_CLAUDE_MD}}` first. If it already contains a `## Second Brain` section, REPLACE it (don't duplicate). If not, APPEND.
+**IMPORTANT:** Read `{{GLOBAL_CLAUDE_MD}}` first. If the file does not exist, create it. If it already contains a `## Second Brain` section, REPLACE it (don't duplicate). If not, APPEND.
 
 Append this section to `{{GLOBAL_CLAUDE_MD}}`:
 
@@ -131,13 +137,21 @@ Append this section to `{{GLOBAL_CLAUDE_MD}}`:
 - When <situation>: <choice> because <reason>
 (top 5-10 most important rules only)
 
+### Product Thinking
+- Scoping: <how they scope features — top-down or bottom-up?>
+- Trade-offs: <what they cut first — scope, quality, or speed?>
+
+### Workflow
+- Planning: <phases, incremental, research-first?>
+- Communication: <terse or detailed? structured or narrative?>
+
 ### Debugging Style
 1. <first step>
 2. <second step>
 3. <third step>
 ```
 
-Keep this section under 50 lines — it loads in EVERY session. Details go in the local memory files.
+Keep this section under 60 lines — it loads in EVERY session. Details go in the local memory files.
 
 ## Update Local MEMORY.md
 
