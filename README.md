@@ -100,7 +100,7 @@ Extracted, organized into 12 categories, and injected into Claude's memory.
 
 **Step 2 — Install the plugin:**
 ```shell
-/plugin install build-second-brain@boparaiamrit-build-second-brain
+/plugin install build-second-brain@build-second-brain
 ```
 
 > 💡 Or test locally during development:

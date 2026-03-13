@@ -1,10 +1,21 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "build-second-brain",
   "description": "Marketplace for Build Second Brain — a Claude Code plugin that mines git repos to build your engineering second brain.",
+  "owner": {
+    "name": "Amritpal Singh",
+    "email": "boparaiamrit@gmail.com"
+  },
   "plugins": [
     {
       "name": "build-second-brain",
-      "path": "."
+      "description": "Analyze git repos commit-by-commit using parallel agents to extract engineering patterns, architecture decisions, and coding conventions into a structured second brain.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Amritpal Singh"
+      },
+      "source": ".",
+      "category": "development"
     }
   ]
 }
