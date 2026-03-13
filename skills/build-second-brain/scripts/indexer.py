@@ -162,6 +162,8 @@ def main():
 
         # Extract repo ID from filename for attribution
         source_repo_id = extract_repo_id_from_filename(batch_file.name)
+        # Register repo ID from filename even if batch has no parseable commits
+        repo_ids_seen.add(source_repo_id)
         commits = parse_commits(content, source_repo_id)
 
         if not commits:

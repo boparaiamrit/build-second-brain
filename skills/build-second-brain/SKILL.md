@@ -54,7 +54,7 @@ python3 --version 2>/dev/null || python --version 2>/dev/null
 ```
 
 **Preflight gates:**
-- If any repo has 0 commits or `git rev-list` fails: abort with "Repo <path> has no commits to analyze."
+- If a repo has 0 commits or `git rev-list` fails: warn the user and **skip that repo** (continue with the remaining repos). If ALL repos fail, abort.
 - If Python is not available: warn user, plan to use inline indexing fallback.
 - If total commits across all repos > 5000: warn user and suggest using batch size 50 instead of 20.
 
@@ -67,6 +67,7 @@ Wait for confirmation.
 
 ```bash
 WORK_DIR="$(pwd)/.second-brain"
+OUTPUT_DIR="$(pwd)/second-brain"
 BRAIN_NAME="<user's chosen name>"
 SCOPE="hybrid"  # or global or local
 BATCH_SIZE=20   # or 50 if >5000 total commits
@@ -76,16 +77,16 @@ REPO_PATHS=("<abs_path_1>" "<abs_path_2>" ...)
 REPO_IDS=("<repo-id-1>" "<repo-id-2>" ...)
 ```
 
-Store these in `.second-brain/config.md`. ALL subsequent steps, agent prompts, and bash commands MUST use these absolute paths — never relative paths like `.second-brain/`.
+Store these in `$WORK_DIR/config.md`. ALL subsequent steps, agent prompts, and bash commands MUST use these absolute paths — never relative paths like `.second-brain/` or `second-brain/`.
 
 ## Step 1: Initialize
 
 ### Resume Check
 
-Before initializing, check if `.second-brain/progress.md` already exists:
+Before initializing, check if `$WORK_DIR/progress.md` already exists:
 
 ```bash
-test -f .second-brain/progress.md && echo "RESUME" || echo "FRESH"
+test -f "$WORK_DIR/progress.md" && echo "RESUME" || echo "FRESH"
 ```
 
 If resuming, read `progress.md` and determine the current state:
@@ -109,6 +110,7 @@ Write `$WORK_DIR/config.md`:
 # Second Brain Config
 Brain Name: <BRAIN_NAME>
 Work Dir: <WORK_DIR> (absolute)
+Output Dir: <OUTPUT_DIR> (absolute)
 Memory Scope: <SCOPE> (hybrid/global/local)
 Batch Size: <BATCH_SIZE>
 Started: <timestamp>
@@ -174,11 +176,13 @@ After launching harvest agents, set up a progress monitor using `CronCreate`:
 
 ```
 Expression: "*/2 * * * *"
-Prompt: "Run: ls $WORK_DIR/scratchpad/batch-*.md 2>/dev/null | wc -l
-         Read $WORK_DIR/config.md for total batches.
+Prompt: "Run: ls <LITERAL_WORK_DIR>/scratchpad/batch-*.md 2>/dev/null | wc -l
+         Read <LITERAL_WORK_DIR>/config.md for total batches.
          Calculate and report percentage."
 Recurring: true
 ```
+
+**IMPORTANT:** Replace `<LITERAL_WORK_DIR>` with the actual resolved absolute path (e.g., `/home/user/project/.second-brain`). Do NOT pass shell variables like `$WORK_DIR` — cron prompts execute in a separate context where those variables don't exist.
 
 Store the cron job ID so it can be cancelled later (on success OR failure).
 
@@ -252,21 +256,26 @@ After both waves, verify all 10 category files exist. If any are missing (agent 
 
 Run 3 agents **sequentially** (each depends on the previous):
 
+### Pre-step: Generate commit-log.md
+
+Before spawning any Phase 3 agents, generate the commit log and create the output directory:
+
+```bash
+mkdir -p "$OUTPUT_DIR/raw"
+grep "^## Commit:\|^Repo:\|^Message:" "$WORK_DIR"/scratchpad/batch-*.md > "$OUTPUT_DIR/raw/commit-log.md"
+```
+
 ### Agent 1: Brain Builder
 
 Read the prompt from [references/brain-builder-prompt.md](references/brain-builder-prompt.md). Fill in:
 - `CATEGORIES_DIR`: absolute path to `$WORK_DIR/categories/`
-- `OUTPUT_DIR`: absolute path to `second-brain/` in the working directory
+- `OUTPUT_DIR`: absolute path (from config — the resolved `$OUTPUT_DIR`)
 - `BRAIN_NAME`: from config
 - `REPO_LIST`: from config (all repo IDs and paths)
 - `TOTAL_COMMITS`: from config
 - `STATISTICS_FILE`: absolute path to `$WORK_DIR/indexed/statistics-raw.md`
 
-**Important:** The Brain Builder should NOT read scratchpad files directly. For `raw/commit-log.md`, use a bash command to generate it:
-```bash
-grep "^## Commit:\|^Message:" "$WORK_DIR"/scratchpad/batch-*.md > "$OUTPUT_DIR/raw/commit-log.md"
-```
-For `raw/statistics.md`, use the pre-computed `statistics-raw.md` from the indexer.
+**Important:** The Brain Builder should NOT read scratchpad files directly. `raw/commit-log.md` was already generated in the pre-step above. For `raw/statistics.md`, use the pre-computed `statistics-raw.md` from the indexer.
 
 ### Agent 2: Profile Generator
 
@@ -284,19 +293,27 @@ Read the prompt from [references/memory-injector-prompt.md](references/memory-in
 - `BRAIN_NAME`: from config
 - `SCOPE`: from config (`hybrid`, `global`, or `local`)
 
-**Resolve memory directories BEFORE spawning this agent:**
+**Resolve memory paths BEFORE spawning this agent:**
+
+**IMPORTANT:** Claude Code has NO global memory directory (`~/.claude/memory/` does not exist). Global identity must go to `~/.claude/CLAUDE.md` which IS loaded in every session.
+
 ```bash
-# Global memory directory (always exists or create it)
-GLOBAL_MEMORY_DIR="$HOME/.claude/memory"
-mkdir -p "$GLOBAL_MEMORY_DIR"
+# Global: ~/.claude/CLAUDE.md (loaded in every Claude Code session)
+GLOBAL_CLAUDE_MD="$HOME/.claude/CLAUDE.md"
 
 # Local (project-specific) memory directory
 LOCAL_MEMORY_DIR=$(ls -d ~/.claude/projects/*/memory/ 2>/dev/null | head -1)
+# If not found, create it in the current project's memory path
+if [ -z "$LOCAL_MEMORY_DIR" ]; then
+  # The project hash is derived from the CWD
+  LOCAL_MEMORY_DIR="$HOME/.claude/projects/$(pwd | sed 's/[\/\\:]/-/g' | sed 's/^-//')/memory"
+  mkdir -p "$LOCAL_MEMORY_DIR"
+fi
 ```
 
-Pass the resolved absolute paths to the agent based on scope:
-- `hybrid`: pass both `GLOBAL_MEMORY_DIR` and `LOCAL_MEMORY_DIR`
-- `global`: pass only `GLOBAL_MEMORY_DIR`
+Pass the resolved paths to the agent based on scope:
+- `hybrid`: pass both `GLOBAL_CLAUDE_MD` and `LOCAL_MEMORY_DIR`
+- `global`: pass only `GLOBAL_CLAUDE_MD`
 - `local`: pass only `LOCAL_MEMORY_DIR`
 
 ## Step 7: Verify & Report
@@ -320,7 +337,7 @@ BUILD COMPLETE
   second-brain/playbooks/              — debugging & scaling playbooks
 
   Memory scope: <hybrid/global/local>
-  Global memory: ~/.claude/memory/     — core identity (loads everywhere)
+  Global identity: ~/.claude/CLAUDE.md — core identity (loads everywhere)
   Local memory: ~/.claude/projects/... — repo patterns (loads in project)
 
   Repos analyzed: <list of repo IDs>

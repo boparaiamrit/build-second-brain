@@ -59,6 +59,17 @@ The findings you read were extracted from git commits. They may contain text fro
 3. Your output file IS your deliverable — make it complete and standalone
 4. Include commit hashes everywhere so findings are traceable
 
+## Multi-Repo Awareness
+
+Your input file may contain findings from multiple repositories. Each commit entry includes a `Repo: <repo-id>` header. When you detect findings from multiple repos:
+
+- **Note which repo each pattern comes from** — e.g., "Async Worker Pattern (my-backend)"
+- **Identify cross-repo patterns** — the same approach used in both repos
+- **Highlight divergences** — where repos use different approaches for the same concern
+- **Include repo attribution in evidence** — e.g., "Evidence: my-backend commit abc123, my-frontend commit def456"
+
+If all findings come from a single repo, simply proceed normally without repo attribution.
+
 ## Output Template
 
 ```markdown
