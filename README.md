@@ -42,40 +42,40 @@ Extracted, organized into 12 categories, and injected into Claude's memory.
 **Artifact Mining** goes beyond code — it reads design specs, planning docs, CLAUDE.md files, ADRs, PR templates, and GSD plans in **chronological order** to capture the hierarchy of your thinking. What you created first reveals what was foundational.
 
 ```
-         ╔═════════════════════════════════════════════════════════════╗
-         ║                    ORCHESTRATOR (lean)                      ║
-         ║        5 phases · 6 hooks · Progress · Crash recovery      ║
-         ╚════════════════════════════╦════════════════════════════════╝
-                                      ║
-                             Agent Teams spawning
-         ┌────────────────┬───────────┴───────────┬────────────────┐
-         │                │                       │                │
- ┌───────┴───────┐ ┌──────┴────────┐ ┌───────────┴─┐ ┌────────────┴──┐
- │ Harvest       │ │ Harvest       │ │ Harvest      │ │ Harvest       │
- │ Agent 1       │ │ Agent 2       │ │ Agent 3      │ │ Agent 4-5     │
- │ Batch 1-3     │ │ Batch 4-6     │ │ Batch 7-9    │ │ Batch 10+     │
- │ Fresh ctx     │ │ Fresh ctx     │ │ Fresh ctx    │ │ Fresh ctx     │
- └───────┬───────┘ └──────┬────────┘ └──────┬───────┘ └──────┬────────┘
-         │                │                  │                │
-         ▼                ▼                  ▼                ▼
- ┌───────────────────────────────────────────────────────────────────┐
- │                  Scratchpad Files (on disk)                       │
- │  batch-myapp-001.md   batch-myapp-002.md   artifacts-myapp.md    │
- └──────────────────────────────┬────────────────────────────────────┘
-                                ▼
- ┌───────────────────────────────────────────────────────────────────┐
- │                Python Indexer (fuzzy tag matching)                │
- │           Splits findings --> 12 category-raw.md files           │
- └──────────────────────────────┬────────────────────────────────────┘
-                                ▼
-            ┌───────────────────┼───────────────────┐
-            │                   │                   │
-    ┌───────┴───────┐   ┌──────┴────────┐   ┌──────┴────────┐
-    │ Wave 1        │   │ Wave 2        │   │ Phase 3       │
-    │ 6 category    │   │ 6 category    │   │ Brain Build   │
-    │ agents        │-->│ agents        │-->│ Profile Gen   │
-    │ parallel      │   │ parallel      │   │ Memory Inj    │
-    └───────────────┘   └───────────────┘   └───────────────┘
+ ╔═════════════════════════════════════════════════════════════════════╗
+ ║                       ORCHESTRATOR (lean)                          ║
+ ║         5 phases · 6 hooks · Progress · Crash recovery             ║
+ ╚════════════════════════════════╦════════════════════════════════════╝
+                                  ║
+                         Agent Teams spawning
+       ┌──────────────┬──────────┴──────────┬──────────────┐
+       │              │                     │              │
+ ┌─────┴─────────┐ ┌──┴────────────┐ ┌─────┴─────────┐ ┌──┴────────────┐
+ │ Harvest       │ │ Harvest       │ │ Harvest       │ │ Harvest       │
+ │ Agent 1       │ │ Agent 2       │ │ Agent 3       │ │ Agent 4-5     │
+ │ Batch 1-3     │ │ Batch 4-6     │ │ Batch 7-9     │ │ Batch 10+     │
+ │ Fresh ctx     │ │ Fresh ctx     │ │ Fresh ctx     │ │ Fresh ctx     │
+ └───────┬───────┘ └───────┬───────┘ └───────┬───────┘ └───────┬───────┘
+         │                 │                  │                 │
+         ▼                 ▼                  ▼                 ▼
+ ┌─────────────────────────────────────────────────────────────────────┐
+ │                    Scratchpad Files (on disk)                       │
+ │  batch-myapp-001.md   batch-myapp-002.md   artifacts-myapp.md      │
+ └─────────────────────────────────┬───────────────────────────────────┘
+                                   ▼
+ ┌─────────────────────────────────────────────────────────────────────┐
+ │                  Python Indexer (fuzzy tag matching)                │
+ │             Splits findings --> 12 category-raw.md files           │
+ └─────────────────────────────────┬───────────────────────────────────┘
+                                   ▼
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+      ┌───────┴───────┐   ┌───────┴───────┐   ┌───────┴───────┐
+      │ Wave 1        │   │ Wave 2        │   │ Phase 3       │
+      │ 6 category    │   │ 6 category    │   │ Brain Build   │
+      │ agents        │-->│ agents        │-->│ Profile Gen   │
+      │ parallel      │   │ parallel      │   │ Memory Inj    │
+      └───────────────┘   └───────────────┘   └───────────────┘
 ```
 
 **What makes it different:**
