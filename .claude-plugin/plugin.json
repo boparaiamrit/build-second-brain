@@ -1,6 +1,6 @@
 {
   "name": "build-second-brain",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Analyze one or more git repositories — commits, design specs, planning docs, project instructions — using parallel agent teams to extract engineering patterns, product thinking, planning philosophy, and decisions. Builds a structured second brain knowledge base with a holistic builder profile (engineer + PM + architect) and hybrid global/local Claude memory injection.",
   "author": {
     "name": "Amritpal Singh",
