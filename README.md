@@ -1,24 +1,25 @@
-<p align="center">
-  <h1 align="center">🧠 Build Second Brain</h1>
-  <p align="center">
-    <strong>Your git history is a goldmine of decisions, patterns, and philosophy.<br>This plugin mines all of it — so Claude already knows how you think.</strong>
-  </p>
-  <p align="center">
-    Every commit. Every design spec. Every planning doc. Every CLAUDE.md.<br>
-    Extracted, organized into 12 categories, and injected into Claude's memory.
-  </p>
-  <p align="center">
-    <a href="#-quick-start"><img src="https://img.shields.io/badge/Get_Started-blue?style=for-the-badge" alt="Get Started"></a>
-    <a href="https://boparaiamrit.github.io/build-second-brain/"><img src="https://img.shields.io/badge/Website-7c3aed?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Website"></a>
-    <a href="https://github.com/boparaiamrit/build-second-brain"><img src="https://img.shields.io/github/stars/boparaiamrit/build-second-brain?style=for-the-badge&color=gold" alt="Stars"></a>
-    <a href="https://github.com/boparaiamrit/build-second-brain/blob/main/LICENSE"><img src="https://img.shields.io/github/license/boparaiamrit/build-second-brain?style=for-the-badge" alt="License"></a>
-  </p>
-  <p align="center">
-    <a href="https://github.com/boparaiamrit"><img src="https://img.shields.io/badge/GitHub-boparaiamrit-181717?style=flat-square&logo=github" alt="GitHub"></a>
-    <a href="https://x.com/boparaiamrit"><img src="https://img.shields.io/badge/X-@boparaiamrit-000000?style=flat-square&logo=x" alt="X/Twitter"></a>
-    <a href="https://github.com/sponsors/boparaiamrit"><img src="https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=flat-square" alt="Sponsor"></a>
-  </p>
-</p>
+<div align="center">
+
+# 🧠 Build Second Brain
+
+**Your git history is a goldmine of decisions, patterns, and philosophy.**<br>
+**This plugin mines all of it — so Claude already knows how you think.**
+
+Every commit. Every design spec. Every planning doc. Every CLAUDE.md.<br>
+Extracted, organized into 12 categories, and injected into Claude's memory.
+
+<br>
+
+[![Get Started](https://img.shields.io/badge/Get_Started-blue?style=for-the-badge)](#-quick-start)
+[![Website](https://img.shields.io/badge/Website-7c3aed?style=for-the-badge&logo=google-chrome&logoColor=white)](https://boparaiamrit.github.io/build-second-brain/)
+[![Stars](https://img.shields.io/github/stars/boparaiamrit/build-second-brain?style=for-the-badge&color=gold)](https://github.com/boparaiamrit/build-second-brain)
+[![License](https://img.shields.io/github/license/boparaiamrit/build-second-brain?style=for-the-badge)](https://github.com/boparaiamrit/build-second-brain/blob/main/LICENSE)
+
+[![GitHub](https://img.shields.io/badge/GitHub-boparaiamrit-181717?style=flat-square&logo=github)](https://github.com/boparaiamrit)
+[![X/Twitter](https://img.shields.io/badge/X-@boparaiamrit-000000?style=flat-square&logo=x)](https://x.com/boparaiamrit)
+[![Sponsor](https://img.shields.io/badge/Sponsor-❤️-ea4aaa?style=flat-square)](https://github.com/sponsors/boparaiamrit)
+
+</div>
 
 ---
 
@@ -91,9 +92,20 @@
 
 ### Install
 
-```bash
-claude plugin add github.com/boparaiamrit/build-second-brain
+**Step 1 — Add the marketplace:**
+```shell
+/plugin marketplace add boparaiamrit/build-second-brain
 ```
+
+**Step 2 — Install the plugin:**
+```shell
+/plugin install build-second-brain@boparaiamrit-build-second-brain
+```
+
+> 💡 Or test locally during development:
+> ```bash
+> claude --plugin-dir /path/to/build-second-brain
+> ```
 
 ### Run
 

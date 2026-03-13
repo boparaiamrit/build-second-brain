@@ -1,0 +1,10 @@
+{
+  "name": "build-second-brain",
+  "description": "Marketplace for Build Second Brain — a Claude Code plugin that mines git repos to build your engineering second brain.",
+  "plugins": [
+    {
+      "name": "build-second-brain",
+      "path": "."
+    }
+  ]
+}
