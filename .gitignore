@@ -1,0 +1,22 @@
+# Second brain working files (generated during execution)
+.second-brain/
+
+# Generated output (user-specific)
+second-brain/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
