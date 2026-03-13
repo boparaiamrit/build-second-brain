@@ -14,7 +14,10 @@
       "author": {
         "name": "Amritpal Singh"
       },
-      "source": ".",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/boparaiamrit/build-second-brain.git"
+      },
       "category": "development"
     }
   ]
