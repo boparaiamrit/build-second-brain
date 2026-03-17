@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Build Second Brain — Claude Code Plugin</title>
-  <meta name="description" content="Turn your git history into an AI that thinks like you. A Claude Code plugin that mines every commit, design spec, and planning doc to build your second brain.">
+  <title>Boparai Skills — Claude Code Plugin</title>
+  <meta name="description" content="Two powerful Claude Code skills by Amritpal Singh Boparai: Build Second Brain (git repo analysis + knowledge base) and SaaS Architect (enterprise multi-tenant backend design).">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -48,97 +48,90 @@
       content: '';
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+      );
       pointer-events: none;
       z-index: 9999;
     }
 
-    /* Noise overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      opacity: 0.02;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 9998;
-    }
-
-    a { color: var(--accent-green); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    /* ─── SIDEBAR ─── */
+    /* Sidebar */
     .sidebar {
       position: fixed;
       top: 0; left: 0; bottom: 0;
-      width: 280px;
+      width: 240px;
       background: var(--bg-sidebar);
       border-right: 1px solid var(--border);
-      padding: 24px 16px;
+      padding: 24px 0;
       overflow-y: auto;
       z-index: 100;
-      transition: transform 0.3s ease;
     }
 
     .sidebar-brand {
       font-family: 'Space Mono', monospace;
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 700;
       color: var(--accent-green);
-      margin-bottom: 4px;
+      padding: 0 20px;
+      margin-bottom: 2px;
     }
 
     .sidebar-sub {
       font-size: 0.65rem;
       color: var(--text-muted);
+      padding: 0 20px;
       margin-bottom: 24px;
-      line-height: 1.4;
+      line-height: 1.6;
     }
 
-    .sidebar-nav { list-style: none; }
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+    }
 
-    .sidebar-nav li { margin-bottom: 2px; }
-
-    .sidebar-nav a {
+    .sidebar-nav li a {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 12px;
-      border-radius: 6px;
+      padding: 7px 20px;
+      font-size: 0.72rem;
       color: var(--text-dimmed);
-      font-size: 0.75rem;
-      transition: all 0.2s;
-    }
-
-    .sidebar-nav a:hover {
-      background: var(--bg-hover);
-      color: var(--text-primary);
       text-decoration: none;
+      transition: all 0.15s;
     }
 
-    .sidebar-nav a.active {
-      background: rgba(74, 222, 128, 0.08);
+    .sidebar-nav li a:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .sidebar-nav li a.active {
       color: var(--accent-green);
+      background: rgba(74, 222, 128, 0.05);
+      border-right: 2px solid var(--accent-green);
+    }
+
+    .nav-section-title {
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 16px 20px 6px;
+      font-weight: 600;
     }
 
     .nav-count {
       font-size: 0.6rem;
       color: var(--text-muted);
-      background: rgba(255,255,255,0.05);
-      padding: 2px 6px;
-      border-radius: 10px;
+      background: var(--bg-hover);
+      padding: 1px 6px;
+      border-radius: 3px;
     }
 
-    .nav-section-title {
-      font-size: 0.6rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      padding: 16px 12px 6px;
-      font-weight: 600;
-    }
-
-    /* ─── MOBILE TOGGLE ─── */
     .sidebar-toggle {
       display: none;
       position: fixed;
@@ -146,75 +139,67 @@
       z-index: 200;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      color: var(--accent-green);
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 4px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+      cursor: pointer;
     }
 
-    /* ─── MAIN CONTENT ─── */
-    .main { margin-left: 280px; }
+    /* Main */
+    .main {
+      margin-left: 240px;
+    }
 
-    /* ─── HERO ─── */
+    /* Hero */
     .hero {
-      padding: 80px 60px 60px;
+      padding: 80px 60px 50px;
       border-bottom: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%; left: 20%;
-      width: 60%; height: 200%;
-      background: radial-gradient(ellipse at center, rgba(74, 222, 128, 0.06) 0%, transparent 70%);
-      pointer-events: none;
     }
 
     .hero-badge {
       display: inline-block;
-      font-size: 0.65rem;
-      color: var(--accent-green);
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      padding: 4px 14px;
-      border-radius: 20px;
-      margin-bottom: 20px;
-      background: rgba(74, 222, 128, 0.06);
+      font-size: 0.6rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
+      color: var(--accent-green);
+      background: rgba(74, 222, 128, 0.08);
+      padding: 4px 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(74, 222, 128, 0.15);
+      margin-bottom: 16px;
     }
 
     .hero h1 {
       font-family: 'Space Mono', monospace;
-      font-size: 2.4rem;
+      font-size: 2.2rem;
       font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 12px;
       line-height: 1.2;
+      margin-bottom: 14px;
     }
 
     .hero h1 span { color: var(--accent-green); }
+    .hero h1 .cyan { color: var(--accent-cyan); }
 
     .hero-tagline {
-      font-size: 0.9rem;
+      font-size: 0.82rem;
       color: var(--text-dimmed);
-      max-width: 600px;
-      margin-bottom: 32px;
+      max-width: 700px;
       line-height: 1.7;
+      margin-bottom: 28px;
     }
 
     .hero-stats {
       display: flex;
+      gap: 36px;
       flex-wrap: wrap;
-      gap: 32px;
-      margin-bottom: 36px;
+      margin-bottom: 28px;
     }
 
     .stat {
-      text-align: center;
+      display: flex;
+      flex-direction: column;
     }
 
     .stat-value {
@@ -222,61 +207,52 @@
       font-size: 1.8rem;
       font-weight: 700;
       color: var(--accent-green);
-      display: block;
+      line-height: 1;
     }
 
     .stat-label {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
+      margin-top: 4px;
     }
 
     .install-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 16px 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 16px;
-      max-width: 100%;
+      padding: 14px 18px;
+      max-width: 700px;
     }
 
     .install-box code {
-      font-size: 0.85rem;
-      color: var(--accent-green);
-      white-space: nowrap;
+      font-size: 0.78rem;
+      color: var(--text-dimmed);
     }
 
-    .install-box .prompt {
-      color: var(--text-muted);
-      user-select: none;
-    }
+    .install-box .prompt { color: var(--accent-green); }
 
     .copy-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text-dimmed);
-      padding: 6px 12px;
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      color: var(--accent-green);
+      padding: 4px 12px;
       border-radius: 4px;
-      cursor: pointer;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      transition: all 0.2s;
+      font-size: 0.65rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
     }
 
-    .copy-btn:hover {
-      border-color: var(--accent-green);
-      color: var(--accent-green);
-    }
+    .copy-btn:hover { background: rgba(74, 222, 128, 0.18); }
+    .copy-btn.copied { background: rgba(74, 222, 128, 0.25); }
 
-    .copy-btn.copied {
-      border-color: var(--accent-green);
-      color: var(--accent-green);
-    }
-
-    /* ─── SECTIONS ─── */
+    /* Section */
     .section {
       padding: 48px 60px;
       border-bottom: 1px solid var(--border);
@@ -284,98 +260,142 @@
 
     .section-title {
       font-family: 'Space Mono', monospace;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      color: var(--text-primary);
       margin-bottom: 8px;
     }
 
     .section-title .accent { color: var(--accent-green); }
+    .section-title .cyan { color: var(--accent-cyan); }
 
     .section-desc {
       font-size: 0.78rem;
       color: var(--text-dimmed);
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       max-width: 700px;
+      line-height: 1.7;
     }
 
-    /* ─── PIPELINE ─── */
+    /* Skill Cards */
+    .skill-showcase {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+    }
+
+    .skill-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skill-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .skill-card.green { border-top: 3px solid var(--accent-green); }
+    .skill-card.cyan { border-top: 3px solid var(--accent-cyan); }
+
+    .skill-badge {
+      display: inline-block;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .badge-green { background: rgba(74, 222, 128, 0.12); color: var(--accent-green); }
+    .badge-cyan { background: rgba(34, 211, 238, 0.12); color: var(--accent-cyan); }
+
+    .skill-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .skill-desc {
+      font-size: 0.75rem;
+      color: var(--text-dimmed);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .skill-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .skill-stat {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .skill-stat strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Pipeline */
     .pipeline {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
     }
 
     .phase-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 18px 20px;
       transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
     }
 
     .phase-card:hover {
       border-color: var(--border-hover);
-      transform: translateY(-2px);
     }
-
-    .phase-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-    }
-
-    .phase-card:nth-child(1)::before { background: var(--accent-green); }
-    .phase-card:nth-child(2)::before { background: var(--accent-cyan); }
-    .phase-card:nth-child(3)::before { background: var(--accent-purple); }
-    .phase-card:nth-child(4)::before { background: var(--accent-amber); }
-    .phase-card:nth-child(5)::before { background: var(--accent-rose); }
 
     .phase-label {
-      font-size: 0.6rem;
+      font-size: 0.55rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
+      letter-spacing: 0.08em;
+      color: var(--accent-green);
+      margin-bottom: 4px;
     }
 
     .phase-name {
       font-family: 'Space Mono', monospace;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    .phase-card:nth-child(1) .phase-name { color: var(--accent-green); }
-    .phase-card:nth-child(2) .phase-name { color: var(--accent-cyan); }
-    .phase-card:nth-child(3) .phase-name { color: var(--accent-purple); }
-    .phase-card:nth-child(4) .phase-name { color: var(--accent-amber); }
-    .phase-card:nth-child(5) .phase-name { color: var(--accent-rose); }
-
     .phase-desc {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--text-dimmed);
       line-height: 1.5;
+      margin-bottom: 8px;
     }
 
     .phase-stat {
-      margin-top: 12px;
       font-size: 0.65rem;
       color: var(--text-muted);
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
     }
 
     .phase-stat strong { color: var(--text-dimmed); }
 
-    /* ─── CATEGORY GRID ─── */
+    /* Categories */
     .cat-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 12px;
     }
 
@@ -387,15 +407,12 @@
       transition: all 0.2s;
     }
 
-    .cat-card:hover {
-      border-color: var(--border-hover);
-      background: var(--bg-hover);
-    }
+    .cat-card:hover { border-color: var(--border-hover); }
 
     .cat-name {
       font-family: 'Space Mono', monospace;
       font-size: 0.8rem;
-      font-weight: 700;
+      font-weight: 600;
       margin-bottom: 6px;
     }
 
@@ -420,7 +437,7 @@
     .tag-ops { background: rgba(34, 211, 238, 0.12); color: var(--accent-cyan); }
     .tag-quality { background: rgba(251, 191, 36, 0.12); color: var(--accent-amber); }
 
-    /* ─── OUTPUT TREE ─── */
+    /* Output Tree */
     .output-tree {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -435,7 +452,7 @@
     .output-tree .file { color: var(--text-dimmed); }
     .output-tree .comment { color: var(--text-muted); font-style: italic; }
 
-    /* ─── HOOKS TABLE ─── */
+    /* Hooks Table */
     .hooks-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -450,9 +467,7 @@
       transition: all 0.2s;
     }
 
-    .hook-card:hover {
-      border-color: var(--border-hover);
-    }
+    .hook-card:hover { border-color: var(--border-hover); }
 
     .hook-event {
       font-size: 0.6rem;
@@ -476,7 +491,7 @@
       line-height: 1.5;
     }
 
-    /* ─── FEATURES ─── */
+    /* Features */
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -516,7 +531,7 @@
       line-height: 1.5;
     }
 
-    /* ─── PROFILE PREVIEW ─── */
+    /* Profile Preview */
     .profile-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -543,7 +558,90 @@
       line-height: 1.5;
     }
 
-    /* ─── TOKEN TABLE ─── */
+    /* SaaS Phase Flow */
+    .saas-phases {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .saas-phase {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      transition: all 0.2s;
+    }
+
+    .saas-phase:hover { border-color: var(--border-hover); }
+
+    .saas-phase-label {
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-cyan);
+      margin-bottom: 4px;
+    }
+
+    .saas-phase-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .saas-phase-desc {
+      font-size: 0.7rem;
+      color: var(--text-dimmed);
+      line-height: 1.5;
+    }
+
+    /* Hierarchy Diagram */
+    .hierarchy-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      font-size: 0.8rem;
+      line-height: 2;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .hierarchy-box .level-company { color: var(--accent-amber); font-weight: 600; }
+    .hierarchy-box .level-workspace { color: var(--accent-purple); font-weight: 600; }
+    .hierarchy-box .level-domain { color: var(--accent-cyan); font-weight: 600; }
+    .hierarchy-box .level-data { color: var(--accent-green); }
+    .hierarchy-box .dim { color: var(--text-muted); }
+
+    /* Checklist */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .checklist-group {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .checklist-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .checklist-item {
+      font-size: 0.7rem;
+      color: var(--text-dimmed);
+      line-height: 1.8;
+      padding-left: 6px;
+    }
+
+    /* Token Table */
     .token-table {
       width: 100%;
       border-collapse: collapse;
@@ -567,16 +665,34 @@
       color: var(--text-dimmed);
     }
 
-    .token-table tr:hover td {
-      background: var(--bg-hover);
-    }
+    .token-table tr:hover td { background: var(--bg-hover); }
 
     .token-table .total-col {
       color: var(--accent-green);
       font-weight: 600;
     }
 
-    /* ─── FOOTER ─── */
+    /* Divider */
+    .skill-divider {
+      padding: 32px 60px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.03), rgba(167, 139, 250, 0.03));
+    }
+
+    .skill-divider h2 {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 6px;
+    }
+
+    .skill-divider p {
+      font-size: 0.78rem;
+      color: var(--text-dimmed);
+    }
+
+    /* Footer */
     .footer {
       padding: 40px 60px;
       text-align: center;
@@ -586,7 +702,7 @@
 
     .footer a { color: var(--accent-green); }
 
-    /* ─── ANIMATIONS ─── */
+    /* Animations */
     .fade-in {
       opacity: 0;
       transform: translateY(12px);
@@ -598,7 +714,7 @@
       transform: translateY(0);
     }
 
-    /* ─── RESPONSIVE ─── */
+    /* Responsive */
     @media (max-width: 1024px) {
       .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
@@ -607,7 +723,9 @@
       .hero { padding: 60px 24px 40px; }
       .hero h1 { font-size: 1.6rem; }
       .section { padding: 36px 24px; }
+      .skill-divider { padding: 24px 24px; }
       .footer { padding: 32px 24px; }
+      .skill-showcase { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 640px) {
@@ -618,6 +736,8 @@
       .hooks-grid { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
       .profile-grid { grid-template-columns: 1fr; }
+      .saas-phases { grid-template-columns: 1fr; }
+      .checklist-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -630,25 +750,31 @@
 
 <!-- Sidebar -->
 <nav class="sidebar">
-  <div class="sidebar-brand">Build Second Brain</div>
-  <div class="sidebar-sub">Claude Code Plugin &middot; v1.0.0<br>by Amritpal Singh</div>
+  <div class="sidebar-brand">Boparai Skills</div>
+  <div class="sidebar-sub">Claude Code Plugin &middot; v1.2.0<br>by Amritpal Singh Boparai</div>
 
   <ul class="sidebar-nav">
     <li><a href="#hero" class="active">Overview</a></li>
 
-    <div class="nav-section-title">Architecture</div>
+    <div class="nav-section-title">Build Second Brain</div>
     <li><a href="#pipeline">Pipeline <span class="nav-count">5 phases</span></a></li>
     <li><a href="#categories">Categories <span class="nav-count">12</span></a></li>
     <li><a href="#hooks">Hooks <span class="nav-count">6</span></a></li>
-
-    <div class="nav-section-title">Output</div>
     <li><a href="#output">Knowledge Base</a></li>
     <li><a href="#profile">Builder Profile</a></li>
     <li><a href="#memory">Memory Injection</a></li>
-
-    <div class="nav-section-title">Details</div>
     <li><a href="#features">Features <span class="nav-count">12</span></a></li>
     <li><a href="#tokens">Token Estimates</a></li>
+
+    <div class="nav-section-title">SaaS Architect</div>
+    <li><a href="#saas-overview">Overview</a></li>
+    <li><a href="#saas-hierarchy">Tenant Hierarchy</a></li>
+    <li><a href="#saas-phases">Phase Flow <span class="nav-count">7 phases</span></a></li>
+    <li><a href="#saas-patterns">Patterns <span class="nav-count">7</span></a></li>
+    <li><a href="#saas-checklist">Master Checklist</a></li>
+    <li><a href="#saas-references">References <span class="nav-count">4</span></a></li>
+
+    <div class="nav-section-title">Plugin</div>
     <li><a href="#structure">Plugin Structure</a></li>
 
     <div class="nav-section-title">Links</div>
@@ -661,16 +787,19 @@
 
   <!-- HERO -->
   <section class="hero" id="hero">
-    <span class="hero-badge">Claude Code Plugin</span>
-    <h1>Build <span>Second Brain</span></h1>
+    <span class="hero-badge">Claude Code Plugin &middot; v1.2.0</span>
+    <h1><span>Boparai</span> <span class="cyan">Skills</span></h1>
     <p class="hero-tagline">
-      Turn your git history into an AI that thinks like you.
-      Mines every commit, design spec, planning doc, and project instruction —
-      builds a structured knowledge base and holistic builder profile.
-      Engineer + PM + Architect, combined.
+      Two powerful Claude Code skills by Amritpal Singh Boparai.
+      Mine your git history into an AI second brain, or architect enterprise-grade
+      multi-tenant SaaS backends. Production-grade tools for serious builders.
     </p>
 
     <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-value">2</span>
+        <span class="stat-label">Skills</span>
+      </div>
       <div class="stat">
         <span class="stat-value">12</span>
         <span class="stat-label">Knowledge Categories</span>
@@ -684,22 +813,67 @@
         <span class="stat-label">Runtime Hooks</span>
       </div>
       <div class="stat">
-        <span class="stat-value">5</span>
-        <span class="stat-label">Pipeline Phases</span>
+        <span class="stat-value">4</span>
+        <span class="stat-label">Reference Docs</span>
       </div>
     </div>
 
     <div class="install-box" style="flex-direction: column; gap: 8px;">
       <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-        <code style="flex: 1;"><span class="prompt">1.</span> /plugin marketplace add boparaiamrit/build-second-brain</code>
-        <button class="copy-btn" onclick="copyText(this, '/plugin marketplace add boparaiamrit/build-second-brain')">Copy</button>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-        <code style="flex: 1;"><span class="prompt">2.</span> /plugin install build-second-brain@build-second-brain</code>
-        <button class="copy-btn" onclick="copyText(this, '/plugin install build-second-brain@build-second-brain')">Copy</button>
+        <code style="flex: 1;"><span class="prompt">$</span> claude /install-plugin boparaiamrit/build-second-brain</code>
+        <button class="copy-btn" onclick="copyText(this, 'claude /install-plugin boparaiamrit/build-second-brain')">Copy</button>
       </div>
     </div>
+
+    <!-- Skill Showcase -->
+    <div class="skill-showcase" style="margin-top: 32px;">
+      <a href="#sb-start" style="text-decoration: none; color: inherit;">
+        <div class="skill-card green">
+          <span class="skill-badge badge-green">Skill 1</span>
+          <div class="skill-name" style="color: var(--accent-green)">Build Second Brain</div>
+          <div class="skill-desc">
+            Analyze git repos commit-by-commit using parallel agent teams.
+            Extract engineering patterns, architecture decisions, product thinking,
+            and coding conventions. Build a structured knowledge base with
+            holistic builder profile and Claude memory injection.
+          </div>
+          <div class="skill-stats">
+            <span class="skill-stat"><strong>5</strong> pipeline phases</span>
+            <span class="skill-stat"><strong>12</strong> categories</span>
+            <span class="skill-stat"><strong>7</strong> agent prompts</span>
+            <span class="skill-stat"><strong>6</strong> hooks</span>
+          </div>
+        </div>
+      </a>
+      <a href="#saas-overview" style="text-decoration: none; color: inherit;">
+        <div class="skill-card cyan">
+          <span class="skill-badge badge-cyan">Skill 2</span>
+          <div class="skill-name" style="color: var(--accent-cyan)">SaaS Architect</div>
+          <div class="skill-desc">
+            Unified enterprise backend architect for multi-tenant, multi-product
+            SaaS systems. NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis.
+            Converts frontend code into production-grade, tenant-aware backend APIs
+            with compliance, observability, and scale built in.
+          </div>
+          <div class="skill-stats">
+            <span class="skill-stat"><strong>7</strong> phase flow</span>
+            <span class="skill-stat"><strong>7</strong> design patterns</span>
+            <span class="skill-stat"><strong>4</strong> reference docs</span>
+            <span class="skill-stat"><strong>14</strong> complexity flags</span>
+          </div>
+        </div>
+      </a>
+    </div>
   </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SKILL 1: BUILD SECOND BRAIN                -->
+  <!-- ═══════════════════════════════════════════ -->
+
+  <div class="skill-divider" id="sb-start">
+    <h2>// Build Second Brain</h2>
+    <p>Turn your git history into an AI that thinks like you.</p>
+  </div>
 
   <!-- PIPELINE -->
   <section class="section" id="pipeline">
@@ -1076,16 +1250,277 @@
     </div>
   </section>
 
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SKILL 2: SAAS ARCHITECT                    -->
+  <!-- ═══════════════════════════════════════════ -->
+
+  <div class="skill-divider" id="saas-overview">
+    <h2>// SaaS Architect</h2>
+    <p>Enterprise multi-tenant, multi-product backend architect. NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis.</p>
+  </div>
+
+  <!-- SAAS OVERVIEW -->
+  <section class="section">
+    <h2 class="section-title"><span class="cyan">//</span> What It Does</h2>
+    <p class="section-desc">
+      A senior enterprise backend architect skill that reads frontend code, extracts real backend intent (not naive CRUD mirrors),
+      researches libraries before writing code, applies correct design patterns automatically, and enforces tenant hierarchy
+      on every table, every query, every endpoint.
+    </p>
+
+    <div class="features-grid fade-in">
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-cyan)">&#9632;</span>
+        <div class="feature-name">Frontend-to-Backend</div>
+        <div class="feature-desc">Reads React/Vue components and extracts the real API contract — not a 1:1 CRUD mirror.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-purple)">&#9632;</span>
+        <div class="feature-name">Library Research First</div>
+        <div class="feature-desc">Compares 3+ options before choosing any new library. Pre-evaluated decisions included.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-amber)">&#9632;</span>
+        <div class="feature-name">Auto Pattern Selection</div>
+        <div class="feature-desc">Adapter, Manager, Strategy, Factory — picks the right pattern based on the feature shape.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-green)">&#9632;</span>
+        <div class="feature-name">Tenant-Aware Everything</div>
+        <div class="feature-desc">Company/Workspace/Domain hierarchy enforced on every table, query, and endpoint.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-rose)">&#9632;</span>
+        <div class="feature-name">Scale by Default</div>
+        <div class="feature-desc">&gt;1000 rows = BullMQ mandatory. SSE progress, job deduplication, dead letter queues.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-orange)">&#9632;</span>
+        <div class="feature-name">Compliance Built In</div>
+        <div class="feature-desc">Audit logging, admin panels, impersonation tracking, subscription enforcement.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TENANT HIERARCHY -->
+  <section class="section" id="saas-hierarchy">
+    <h2 class="section-title"><span class="cyan">//</span> Tenant Hierarchy</h2>
+    <p class="section-desc">The immutable foundation. Every table, every query, every endpoint respects this hierarchy.</p>
+
+    <div class="hierarchy-box fade-in">
+      <span class="level-company">Company</span> <span class="dim">(billing entity — subscriptions, plan limits, seats)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="level-workspace">Workspace</span> <span class="dim">(organizational unit — settings, custom field definitions, user roles)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="level-domain">Domain</span> <span class="dim">(data partition — primary query pivot for all hot-path operations)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="level-data">Data</span> <span class="dim">(recipients, campaigns, events — scoped per domain)</span>
+    </div>
+
+    <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px;" class="fade-in">
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-amber)">Denormalization</div>
+        <div class="phase-name" style="font-size: 0.8rem;">Every Table = 3 IDs</div>
+        <div class="phase-desc">company_id + workspace_id + domain_id on every data table. Domain migration is rare (~once/year), so redundancy is worth it.</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-cyan)">Indexing Rule</div>
+        <div class="phase-name" style="font-size: 0.8rem;">Separate Per Level</div>
+        <div class="phase-desc">Never one composite index with all 3. Start with domain_id only. Add workspace/company indexes when proven.</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-green)">Shared Module</div>
+        <div class="phase-name" style="font-size: 0.8rem;">Recipients x 10+ Products</div>
+        <div class="phase-desc">Core recipients table + extension tables per product (email, sms, whatsapp, push...). Extension = "enrolled in this product."</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-purple)">Redis Context</div>
+        <div class="phase-name" style="font-size: 0.8rem;">TenantContextGuard</div>
+        <div class="phase-desc">Every request resolves hierarchy from Redis (not DB joins). Attached to request.tenantContext. 1hr TTL.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAAS PHASE FLOW -->
+  <section class="section" id="saas-phases">
+    <h2 class="section-title"><span class="cyan">//</span> 7-Phase Flow</h2>
+    <p class="section-desc">Applied to every feature, from simple CRUD to complex enterprise workflows.</p>
+
+    <div class="saas-phases fade-in">
+      <div class="saas-phase">
+        <div class="saas-phase-label">Phase 0</div>
+        <div class="saas-phase-name">Library Selection</div>
+        <div class="saas-phase-desc">List 3+ candidates, compare maturity/TypeScript/NestJS compat/license. State recommendation with reasoning.</div>
+      </div>
+      <div class="saas-phase">
+        <div class="saas-phase-label">Phase 1</div>
+        <div class="saas-phase-name">Context Extraction</div>
+        <div class="saas-phase-desc">Write user story with hierarchy context. Flag 14 complexity dimensions (tenant, shared, bulk, async, staging...).</div>
+      </div>
+      <div class="saas-phase">
+        <div class="saas-phase-label">Phase 2</div>
+        <div class="saas-phase-name">Database Schema</div>
+        <div class="saas-phase-desc">Drizzle tables with all 3 IDs, domain_id index always, TimescaleDB for events, JSONB + GIN for custom fields.</div>
+      </div>
+      <div class="saas-phase">
+        <div class="saas-phase-label">Phase 3</div>
+        <div class="saas-phase-name">NestJS Module</div>
+        <div class="saas-phase-desc">Controller (HTTP only) &rarr; Service (business logic) &rarr; Repository (Drizzle, domain_id first). DTOs for validation.</div>
+      </div>
+      <div class="saas-phase">
+        <div class="saas-phase-label">Phase 4</div>
+        <div class="saas-phase-name">Async & Scale</div>
+        <div class="saas-phase-desc">&gt;1000 rows = BullMQ. SSE progress via Redis. File imports: upload &rarr; staging &rarr; preview &rarr; commit.</div>
+      </div>
+      <div class="saas-phase">
+        <div class="saas-phase-label">Phase 5</div>
+        <div class="saas-phase-name">Compliance</div>
+        <div class="saas-phase-desc">@Audit decorator on mutations. BaseProcessor for job logs. Admin panel with MFA. Impersonation tracking.</div>
+      </div>
+      <div class="saas-phase">
+        <div class="saas-phase-label">Phase 6</div>
+        <div class="saas-phase-name">Caching Strategy</div>
+        <div class="saas-phase-desc">Domain context (1hr), custom field defs (1hr), counts (5min), filter results (5min). Invalidation rules per entity.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAAS PATTERNS -->
+  <section class="section" id="saas-patterns">
+    <h2 class="section-title"><span class="cyan">//</span> Design Patterns</h2>
+    <p class="section-desc">Seven core patterns applied automatically based on feature shape.</p>
+
+    <div class="features-grid fade-in">
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-cyan)">&#9632;</span>
+        <div class="feature-name">TenantContextGuard</div>
+        <div class="feature-desc">Resolves company/workspace/domain from Redis on every request. Checks subscription status.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-purple)">&#9632;</span>
+        <div class="feature-name">Adapter Pattern</div>
+        <div class="feature-desc">Multiple external providers (SSO, email, SMS). Common interface, provider-specific implementations.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-amber)">&#9632;</span>
+        <div class="feature-name">Manager Pattern</div>
+        <div class="feature-desc">Runtime selection of the right adapter based on configuration or context.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-green)">&#9632;</span>
+        <div class="feature-name">Strategy Pattern</div>
+        <div class="feature-desc">Plan-based limit enforcement. Different behavior per subscription tier.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-rose)">&#9632;</span>
+        <div class="feature-name">BaseProcessor</div>
+        <div class="feature-desc">All BullMQ jobs extend BaseProcessor. Automatic job logging on success and failure.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-orange)">&#9632;</span>
+        <div class="feature-name">@Audit Decorator</div>
+        <div class="feature-desc">Declarative audit logging on mutations. Admin actions use logSync() for guaranteed writes.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon" style="color: var(--accent-blue)">&#9632;</span>
+        <div class="feature-name">Repository Pattern</div>
+        <div class="feature-desc">Pure Drizzle queries. domain_id always first WHERE. No business logic, no HTTP concerns.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAAS MASTER CHECKLIST -->
+  <section class="section" id="saas-checklist">
+    <h2 class="section-title"><span class="cyan">//</span> Master Checklist</h2>
+    <p class="section-desc">Run before shipping any feature. Catches the hidden complexity that multi-tenancy introduces.</p>
+
+    <div class="checklist-grid fade-in">
+      <div class="checklist-group">
+        <div class="checklist-title" style="color: var(--accent-amber)">Hierarchy & Tenancy</div>
+        <div class="checklist-item">Table has company_id, workspace_id, domain_id</div>
+        <div class="checklist-item">Hot-path queries use domain_id (with index)</div>
+        <div class="checklist-item">tenantContext resolved from Redis, not DB joins</div>
+        <div class="checklist-item">Subscription limits checked before mutations</div>
+      </div>
+      <div class="checklist-group">
+        <div class="checklist-title" style="color: var(--accent-cyan)">Shared Module</div>
+        <div class="checklist-item">Touching recipients: core table or extension table?</div>
+        <div class="checklist-item">Extension table has all 3 hierarchy IDs</div>
+        <div class="checklist-item">No N+1: use JOIN or inArray, never loop</div>
+      </div>
+      <div class="checklist-group">
+        <div class="checklist-title" style="color: var(--accent-green)">Async & Scale</div>
+        <div class="checklist-item">&gt;1000 rows = BullMQ + jobId return</div>
+        <div class="checklist-item">File imports use staging table + preview + commit</div>
+        <div class="checklist-item">SSE progress for long operations</div>
+        <div class="checklist-item">Job deduplication via BullMQ jobId</div>
+      </div>
+      <div class="checklist-group">
+        <div class="checklist-title" style="color: var(--accent-purple)">Compliance</div>
+        <div class="checklist-item">Every MUTATION has @Audit (skip GET/reads)</div>
+        <div class="checklist-item">Processors extend BaseProcessor (auto job_logs)</div>
+        <div class="checklist-item">Admin actions use logSync() (synchronous audit)</div>
+        <div class="checklist-item">Additive limit check: existing + incoming &le; limit</div>
+      </div>
+      <div class="checklist-group">
+        <div class="checklist-title" style="color: var(--accent-rose)">Custom Fields & Events</div>
+        <div class="checklist-item">JSONB column + GIN index on entity table</div>
+        <div class="checklist-item">Definitions cached per workspace in Redis</div>
+        <div class="checklist-item">Time-series data uses TimescaleDB hypertable</div>
+        <div class="checklist-item">Retention policy + continuous aggregates configured</div>
+      </div>
+      <div class="checklist-group">
+        <div class="checklist-title" style="color: var(--accent-orange)">Design Patterns</div>
+        <div class="checklist-item">Multiple providers = Adapter pattern</div>
+        <div class="checklist-item">Runtime selection = Manager pattern</div>
+        <div class="checklist-item">Plan-based limits = Strategy pattern</div>
+        <div class="checklist-item">New library = 3+ options compared first</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAAS REFERENCES -->
+  <section class="section" id="saas-references">
+    <h2 class="section-title"><span class="cyan">//</span> Reference Documents</h2>
+    <p class="section-desc">Four comprehensive reference files loaded on-demand during skill execution.</p>
+
+    <div class="pipeline fade-in" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-cyan)">5.5 KB</div>
+        <div class="phase-name" style="font-size: 0.8rem;">library-decisions.md</div>
+        <div class="phase-desc">Pre-evaluated tech choices: job queues, identity, audit, file parsing, email, storage, observability, feature flags.</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-cyan)">17 KB</div>
+        <div class="phase-name" style="font-size: 0.8rem;">schema-reference.md</div>
+        <div class="phase-desc">Complete Drizzle table definitions for all core entities — companies, workspaces, domains, recipients, extensions, events, audit, SSO, admin.</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-cyan)">15 KB</div>
+        <div class="phase-name" style="font-size: 0.8rem;">patterns-reference.md</div>
+        <div class="phase-desc">Design pattern implementations: TenantContextGuard, Adapter, Manager, Strategy, BaseProcessor, @Audit decorator, Repository.</div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-label" style="color: var(--accent-cyan)">13 KB</div>
+        <div class="phase-name" style="font-size: 0.8rem;">enterprise-reference.md</div>
+        <div class="phase-desc">Admin module, impersonation service, SSO end-to-end flow, file import flow, domain migration, BullMQ queue configuration.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PLUGIN STRUCTURE                            -->
+  <!-- ═══════════════════════════════════════════ -->
+
   <!-- STRUCTURE -->
   <section class="section" id="structure">
     <h2 class="section-title"><span class="accent">//</span> Plugin Structure</h2>
-    <p class="section-desc">Complete file layout of the plugin.</p>
+    <p class="section-desc">Complete file layout — two skills, runtime hooks, and documentation.</p>
 
     <div class="output-tree fade-in">
       <span class="dir">second-brain/</span><br>
       &nbsp;&nbsp;<span class="dir">.claude-plugin/</span><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">plugin.json</span> <span class="comment">// Plugin manifest</span><br>
-      &nbsp;&nbsp;<span class="dir">skills/build-second-brain/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">plugin.json</span> <span class="comment">// Plugin manifest (v1.2.0)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">marketplace.json</span> <span class="comment">// Marketplace listing</span><br>
+      <br>
+      &nbsp;&nbsp;<span class="dir">skills/build-second-brain/</span> <span class="comment">// Skill 1</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">SKILL.md</span> <span class="comment">// Main orchestrator (600+ lines)</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">references/</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">harvest-agent-prompt.md</span> <span class="comment">// Phase 1: commit analysis</span><br>
@@ -1098,12 +1533,23 @@
       &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">scripts/</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">indexer.py</span> <span class="comment">// Category indexer (fuzzy matching)</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">verify.py</span> <span class="comment">// Post-run verification (12+ checks)</span><br>
+      <br>
+      &nbsp;&nbsp;<span class="dir">skills/saas-architect-skill/</span> <span class="comment">// Skill 2</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">SKILL.md</span> <span class="comment">// Enterprise SaaS architect (15KB)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">library-decisions.md</span> <span class="comment">// Pre-evaluated tech choices</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">schema-reference.md</span> <span class="comment">// Drizzle table definitions</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">patterns-reference.md</span> <span class="comment">// Design patterns & guards</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">enterprise-reference.md</span> <span class="comment">// Admin, SSO, imports</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">TEST_SCENARIOS.md</span> <span class="comment">// 5 evaluation scenarios</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">TEST_RESULTS.md</span> <span class="comment">// Test execution results</span><br>
+      <br>
       &nbsp;&nbsp;<span class="dir">hooks/</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">hooks.json</span> <span class="comment">// 6 runtime enforcement hooks</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">scripts/</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">validate-write-paths.sh</span> <span class="comment">// Path & filename validation</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">validate-scratchpad-output.sh</span> <span class="comment">// Output structure validation</span><br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">validate-agent-completion.sh</span> <span class="comment">// Completion progress check</span><br>
+      <br>
       &nbsp;&nbsp;<span class="file">index.html</span> <span class="comment">// This documentation page</span><br>
       &nbsp;&nbsp;<span class="file">README.md</span><br>
       &nbsp;&nbsp;<span class="file">LICENSE</span> <span class="comment">// MIT</span><br>
@@ -1113,7 +1559,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <p>
-      <strong style="color: var(--text-primary)">Build Second Brain</strong> &middot; v1.0.0 &middot;
+      <strong style="color: var(--text-primary)">Boparai Skills</strong> &middot; v1.2.0 &middot;
       <a href="https://github.com/boparaiamrit/build-second-brain">GitHub</a> &middot;
       <a href="https://github.com/boparaiamrit">@boparaiamrit</a> &middot;
       MIT License
@@ -1149,7 +1595,7 @@
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
   // Active nav tracking
-  const sections = document.querySelectorAll('section[id], .hero[id]');
+  const sections = document.querySelectorAll('section[id], .hero[id], .skill-divider[id]');
   const navLinks = document.querySelectorAll('.sidebar-nav a[href^="#"]');
 
   window.addEventListener('scroll', () => {

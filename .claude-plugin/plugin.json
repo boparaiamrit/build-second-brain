@@ -1,9 +1,9 @@
 {
   "name": "build-second-brain",
-  "version": "1.1.0",
-  "description": "Analyze one or more git repositories — commits, design specs, planning docs, project instructions — using parallel agent teams to extract engineering patterns, product thinking, planning philosophy, and decisions. Builds a structured second brain knowledge base with a holistic builder profile (engineer + PM + architect) and hybrid global/local Claude memory injection.",
+  "version": "1.2.0",
+  "description": "Two powerful skills by Amritpal Singh Boparai: (1) Build Second Brain — analyze git repos commit-by-commit using parallel agent teams to extract engineering patterns, build a structured knowledge base with holistic builder profile and Claude memory injection. (2) SaaS Architect — unified enterprise backend architect for multi-tenant, multi-product SaaS systems using NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis.",
   "author": {
-    "name": "Amritpal Singh",
+    "name": "Amritpal Singh Boparai",
     "url": "https://github.com/boparaiamrit"
   },
   "repository": "https://github.com/boparaiamrit/build-second-brain",
@@ -23,6 +23,17 @@
     "cross-repo",
     "product-thinking",
     "artifact-mining",
-    "philosophy"
+    "philosophy",
+    "saas-architect",
+    "nestjs",
+    "drizzle-orm",
+    "multi-tenant",
+    "postgresql",
+    "timescaledb",
+    "bullmq",
+    "redis",
+    "enterprise",
+    "backend",
+    "api-design"
   ]
 }

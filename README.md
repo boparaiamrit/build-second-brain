@@ -1,12 +1,8 @@
 <div align="center">
 
-# 🧠 Build Second Brain
+# Boparai Skills — Claude Code Plugin
 
-**Your git history is a goldmine of decisions, patterns, and philosophy.**<br>
-**This plugin mines all of it — so Claude already knows how you think.**
-
-Every commit. Every design spec. Every planning doc. Every CLAUDE.md.<br>
-Extracted, organized into 12 categories, and injected into Claude's memory.
+**Two powerful skills by Amritpal Singh Boparai**
 
 <br>
 
@@ -23,9 +19,20 @@ Extracted, organized into 12 categories, and injected into Claude's memory.
 
 ---
 
+## Skills Included
+
+| # | Skill | What It Does |
+|:---:|:---|:---|
+| 1 | **Build Second Brain** | Analyze git repos commit-by-commit using parallel agents. Extract engineering patterns, architecture decisions, product thinking. Build a structured knowledge base with holistic builder profile and Claude memory injection. |
+| 2 | **SaaS Architect** | Unified enterprise backend architect for multi-tenant, multi-product SaaS systems. NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis. Converts frontend code into production-grade, tenant-aware backend APIs. |
+
+---
+
+# Skill 1: Build Second Brain
+
 ## 🌟 What is This?
 
-**Build Second Brain** is a Claude Code plugin that analyzes your entire git history — **every single commit, design spec, planning doc, and project instruction** — using parallel agent teams to extract your engineering patterns, product thinking, planning philosophy, and architecture decisions. It builds a structured **second brain** knowledge base with a holistic builder profile.
+**Build Second Brain** analyzes your entire git history — **every single commit, design spec, planning doc, and project instruction** — using parallel agent teams to extract your engineering patterns, product thinking, planning philosophy, and architecture decisions. It builds a structured **second brain** knowledge base with a holistic builder profile.
 
 > 💡 Your git history is a time machine of your thinking. Every commit answers: *Why did you change this?* Every design spec answers: *What trade-offs did you weigh?* Every planning doc answers: *How do you break down problems?* This plugin reverse-engineers your complete builder brain from those answers.
 
@@ -443,17 +450,72 @@ Most engineers have **thousands** of these decisions buried in their repos. This
 
 ---
 
+---
+
+# Skill 2: SaaS Architect
+
+## What is This?
+
+**SaaS Architect** is a unified enterprise backend architect skill for multi-tenant, multi-product SaaS systems. It uses **NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis** and converts frontend code into production-grade, tenant-aware backend APIs.
+
+### Core Architecture
+
+**Immutable Tenant Hierarchy:**
+```
+Company (billing entity — subscriptions, plan limits, seats)
+  └── Workspace (organizational unit — settings, custom field defs, user roles)
+        └── Domain (data partition — primary query pivot for hot-path operations)
+              └── Data (recipients, campaigns, events — scoped per domain)
+```
+
+### 7-Phase Flow (Applied to Every Feature)
+
+| Phase | Name | What It Does |
+|:---:|:---|:---|
+| 0 | **Library Selection** | Compare 3+ candidates before choosing any library |
+| 1 | **Context Extraction** | User story + 14 complexity flags (tenant, shared, bulk, async...) |
+| 2 | **Database Schema** | Drizzle tables with all 3 IDs, proper indexes, TimescaleDB for events |
+| 3 | **NestJS Module** | Controller → Service → Repository pattern with DTOs |
+| 4 | **Async & Scale** | >1000 rows = BullMQ mandatory. SSE progress. File import staging. |
+| 5 | **Compliance** | @Audit decorator, BaseProcessor for jobs, admin panel with MFA |
+| 6 | **Caching Strategy** | Redis caching with domain/workspace scoping and invalidation rules |
+
+### Design Patterns (7 Core)
+
+- **TenantContextGuard** — resolves hierarchy from Redis on every request
+- **Adapter Pattern** — multiple external providers (SSO, email, SMS)
+- **Manager Pattern** — runtime selection of the right adapter
+- **Strategy Pattern** — plan-based limit enforcement per subscription tier
+- **BaseProcessor** — all BullMQ jobs with automatic logging
+- **@Audit Decorator** — declarative compliance logging on mutations
+- **Repository Pattern** — pure Drizzle queries, domain_id first
+
+### Reference Documents (4 Files, 50KB+)
+
+| File | Size | Content |
+|:---|:---:|:---|
+| `library-decisions.md` | 5.5KB | Pre-evaluated tech choices (job queues, identity, audit, storage...) |
+| `schema-reference.md` | 17KB | Complete Drizzle table definitions for all core entities |
+| `patterns-reference.md` | 15KB | Design pattern implementations with full code examples |
+| `enterprise-reference.md` | 13KB | Admin module, impersonation, SSO flow, file imports, domain migration |
+
+### Trigger Words
+
+The skill activates when you mention: `backend`, `API`, `schema`, `endpoint`, `NestJS`, `Drizzle`, `multi-tenant`, `workspace`, `domain`, `recipient`, `bulk`, `import`, `SSO`, `admin`, `audit`, `job queue`
+
+---
+
 ## 🤝 Contributing
 
 Contributions welcome! Feel free to open issues or PRs.
 
 **Areas for contribution:**
-- 🏷️ New knowledge categories
-- 🐍 Alternative indexer implementations
-- 📄 Additional artifact types to mine
-- 🧬 Improved profile generation templates
-- 🔀 Support for non-git VCS
-- 🌍 Additional memory scope strategies
+- New knowledge categories for Build Second Brain
+- Alternative indexer implementations
+- Additional artifact types to mine
+- New reference documents for SaaS Architect
+- Additional design pattern templates
+- Support for non-git VCS
 
 ---
 
@@ -465,9 +527,9 @@ Contributions welcome! Feel free to open issues or PRs.
 
 ## 👤 Author
 
-**Amritpal Singh** — [@boparaiamrit](https://github.com/boparaiamrit)
+**Amritpal Singh Boparai** — [@boparaiamrit](https://github.com/boparaiamrit)
 
-Built with [Claude Code](https://claude.ai/claude-code) ⚡
+Built with [Claude Code](https://claude.ai/claude-code)
 
 ---
 
