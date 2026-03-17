@@ -1,6 +1,6 @@
 <div align="center">
 
-# Boparai Skills — Claude Code Plugin
+# Second Brain — Claude Code Plugin
 
 **Two powerful skills by Amritpal Singh Boparai**
 
