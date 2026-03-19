@@ -1,6 +1,6 @@
 {
   "name": "build-second-brain",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "10 production-grade skills by Amritpal Singh Boparai for full-stack multi-tenant SaaS development: Build Second Brain (git repo analysis + knowledge base), SaaS Architect (enterprise backend), Frontend Architect (Next.js + React), MSSP Audit (48-check multi-tenant compliance), API Docs (OpenAPI + SDK generation), Code Review (PR review checklists), DevOps (CI/CD + Docker + monitoring), Performance (backend + frontend + DB optimization), Security (enterprise auth + OWASP), Testing (unit + E2E + multi-tenant isolation).",
   "author": {
     "name": "Amritpal Singh Boparai",

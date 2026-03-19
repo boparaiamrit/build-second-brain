@@ -10,7 +10,7 @@
     {
       "name": "build-second-brain",
       "description": "10 production-grade skills: Build Second Brain, SaaS Architect, Frontend Architect, MSSP Audit, API Docs, Code Review, DevOps, Performance, Security, Testing. Full-stack multi-tenant SaaS development with NestJS + Next.js + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis.",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "Amritpal Singh Boparai"
       },
