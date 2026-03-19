@@ -14,10 +14,7 @@
       "author": {
         "name": "Amritpal Singh Boparai"
       },
-      "source": {
-        "source": "github",
-        "repo": "boparaiamrit/build-second-brain"
-      },
+      "source": ".",
       "category": "development"
     }
   ]
