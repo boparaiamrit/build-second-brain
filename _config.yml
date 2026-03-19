@@ -1,0 +1,12 @@
+exclude:
+  - skills/
+  - .claude-plugin/
+  - hooks/
+  - docs/
+  - scripts/
+  - .superpowers/
+  - .second-brain/
+  - "*.py"
+  - LICENSE
+  - README.md
+  - CLAUDE.md
