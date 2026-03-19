@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "build-second-brain",
-  "description": "Two skills by Amritpal Singh Boparai: Build Second Brain (git repo analysis + knowledge base + Claude memory injection) and SaaS Architect (enterprise multi-tenant backend design with NestJS + Drizzle + PostgreSQL).",
+  "description": "10 production-grade skills by Amritpal Singh Boparai for full-stack multi-tenant SaaS development — from git analysis to architecture, frontend, security, testing, DevOps, and beyond.",
   "owner": {
     "name": "Amritpal Singh Boparai",
     "email": "boparaiamrit@gmail.com"
@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "build-second-brain",
-      "description": "Two powerful skills: (1) Build Second Brain — mine git repos with parallel agents to extract engineering patterns into a structured knowledge base with Claude memory injection. (2) SaaS Architect — enterprise multi-tenant backend architect for NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis.",
-      "version": "1.2.0",
+      "description": "10 production-grade skills: Build Second Brain, SaaS Architect, Frontend Architect, MSSP Audit, API Docs, Code Review, DevOps, Performance, Security, Testing. Full-stack multi-tenant SaaS development with NestJS + Next.js + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis.",
+      "version": "2.0.0",
       "author": {
         "name": "Amritpal Singh Boparai"
       },
