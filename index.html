@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Second Brain — Claude Code Plugin</title>
-  <meta name="description" content="Second Brain — a Claude Code plugin with two skills by Amritpal Singh Boparai: Build Second Brain (git repo analysis + knowledge base) and SaaS Architect (enterprise multi-tenant backend design).">
+  <meta name="description" content="Second Brain — a Claude Code plugin with 10 production-grade skills by Amritpal Singh Boparai for full-stack multi-tenant SaaS development.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -692,6 +692,66 @@
       color: var(--text-dimmed);
     }
 
+    /* Examples */
+    .example-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .example-card:hover { border-color: var(--border-hover); }
+    .example-num {
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      color: #000;
+    }
+    .example-title { color: var(--text-primary); font-weight: 600; font-size: 13px; }
+    .skill-tag {
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .skill-tag-audit { background: rgba(251,113,133,0.12); color: var(--accent-rose); }
+    .skill-tag-saas { background: rgba(167,139,250,0.12); color: var(--accent-purple); }
+    .skill-tag-fe { background: rgba(34,211,238,0.12); color: var(--accent-cyan); }
+    .example-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .example-outcome {
+      background: rgba(74,222,128,0.04);
+      border: 1px solid rgba(74,222,128,0.15);
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .example-outcome h5 { color: var(--accent-green); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .example-outcome p { color: var(--text-dimmed); font-size: 12px; line-height: 1.6; }
+    .example-risk {
+      background: rgba(251,113,133,0.04);
+      border: 1px solid rgba(251,113,133,0.15);
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .example-risk h5 { color: var(--accent-rose); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .example-risk p { color: var(--text-dimmed); font-size: 12px; line-height: 1.6; }
+    .example-section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      margin: 36px 0 18px;
+    }
+    .examples-list { display: flex; flex-direction: column; gap: 18px; }
+    .skill-flow { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; flex-wrap: wrap; }
+    .skill-flow-arrow { color: var(--text-muted); font-size: 11px; }
+
     /* Footer */
     .footer {
       padding: 40px 60px;
@@ -751,7 +811,7 @@
 <!-- Sidebar -->
 <nav class="sidebar">
   <div class="sidebar-brand">Second Brain</div>
-  <div class="sidebar-sub">Claude Code Plugin &middot; v1.2.0<br>by Amritpal Singh Boparai</div>
+  <div class="sidebar-sub">Claude Code Plugin &middot; v2.0.0<br>by Amritpal Singh Boparai</div>
 
   <ul class="sidebar-nav">
     <li><a href="#hero" class="active">Overview</a></li>
@@ -774,6 +834,19 @@
     <li><a href="#saas-checklist">Master Checklist</a></li>
     <li><a href="#saas-references">References <span class="nav-count">4</span></a></li>
 
+    <div class="nav-section-title">Frontend Architect</div>
+    <li><a href="#fe-overview">Overview</a></li>
+    <li><a href="#fe-phases">Phase Flow <span class="nav-count">7 phases</span></a></li>
+    <li><a href="#fe-mssp">MSSP Patterns</a></li>
+
+    <div class="nav-section-title">MSSP Audit</div>
+    <li><a href="#audit-overview">Overview</a></li>
+    <li><a href="#audit-phases">5-Phase Audit</a></li>
+    <li><a href="#audit-planning">Planning Gate</a></li>
+
+    <div class="nav-section-title">Examples</div>
+    <li><a href="#examples">20 Situations <span class="nav-count">20</span></a></li>
+
     <div class="nav-section-title">Plugin</div>
     <li><a href="#structure">Plugin Structure</a></li>
 
@@ -787,17 +860,17 @@
 
   <!-- HERO -->
   <section class="hero" id="hero">
-    <span class="hero-badge">Claude Code Plugin &middot; v1.2.0</span>
+    <span class="hero-badge">Claude Code Plugin &middot; v2.0.0</span>
     <h1><span>Second</span> <span class="cyan">Brain</span></h1>
     <p class="hero-tagline">
-      Two powerful Claude Code skills by Amritpal Singh Boparai.
-      Mine your git history into an AI second brain, or architect enterprise-grade
-      multi-tenant SaaS backends. Production-grade tools for serious builders.
+      10 production-grade Claude Code skills by Amritpal Singh Boparai.
+      Full-stack multi-tenant SaaS development — from git analysis to architecture,
+      frontend, security, testing, DevOps, and beyond.
     </p>
 
     <div class="hero-stats">
       <div class="stat">
-        <span class="stat-value">2</span>
+        <span class="stat-value">10</span>
         <span class="stat-label">Skills</span>
       </div>
       <div class="stat">
@@ -1553,6 +1626,443 @@
       &nbsp;&nbsp;<span class="file">index.html</span> <span class="comment">// This documentation page</span><br>
       &nbsp;&nbsp;<span class="file">README.md</span><br>
       &nbsp;&nbsp;<span class="file">LICENSE</span> <span class="comment">// MIT</span><br>
+    </div>
+  </section>
+
+  <!-- FRONTEND ARCHITECT SKILL -->
+  <div class="skill-divider" id="fe-overview">
+    <h2><span style="color: var(--accent-cyan)">03</span> Frontend Architect</h2>
+    <p>Next.js 16 + React 19 + TypeScript 5 + Tailwind 4 + Zustand + TanStack Query + TanStack Table</p>
+  </div>
+
+  <section id="fe-phases" class="fade-in">
+    <h3>Seven-Phase Flow</h3>
+    <div class="phase-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 20px 0;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 12px;">PHASE 0</div>
+        <div style="color: var(--text-primary); font-weight: 600; margin: 4px 0;">Types & Contracts</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Entity types + Zod schemas BEFORE any component</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 12px;">PHASE 1</div>
+        <div style="color: var(--text-primary); font-weight: 600; margin: 4px 0;">Mock Data & API</div>
+        <div style="color: var(--text-muted); font-size: 12px;">fetchApi() adapter + mock handler + API service</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 12px;">PHASE 2</div>
+        <div style="color: var(--text-primary); font-weight: 600; margin: 4px 0;">React Query Hooks</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Query key hierarchy + cache invalidation</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 12px;">PHASE 3</div>
+        <div style="color: var(--text-primary); font-weight: 600; margin: 4px 0;">Components</div>
+        <div style="color: var(--text-muted); font-size: 12px;">UnifiedDataTable, forms, detail panels</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 12px;">PHASE 4</div>
+        <div style="color: var(--text-primary); font-weight: 600; margin: 4px 0;">Pages</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Thin wrappers: fetch data, render components</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 12px;">PHASE 5</div>
+        <div style="color: var(--text-primary); font-weight: 600; margin: 4px 0;">Wizard Patterns</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Multi-step flows with centralized state</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-weight: 700; font-size: 12px;">PHASE 6</div>
+        <div style="color: var(--text-primary); font-weight: 600; margin: 4px 0;">Polish & Quality</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Loading, empty, error states. Accessibility.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fe-mssp" class="fade-in">
+    <h3>MSSP Frontend Patterns</h3>
+    <p style="color: var(--text-dimmed); margin-bottom: 16px;">Progressive complexity — UC1 users see simple UI, UC3 users see full MSSP features.</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+      <div style="background: var(--bg-card); border: 1px solid #22c55e40; border-radius: var(--radius); padding: 16px;">
+        <div style="color: var(--accent-green); font-weight: 700; font-size: 13px; margin-bottom: 8px;">UC1: Zerodha</div>
+        <div style="color: var(--text-muted); font-size: 12px;">No workspace selector. No domain tabs. No Person column. Clean, simple UI. Zero multi-tenant complexity visible.</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid #60a5fa40; border-radius: var(--radius); padding: 16px;">
+        <div style="color: var(--accent-blue); font-weight: 700; font-size: 13px; margin-bottom: 8px;">UC2: Reliance Jio</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Domain tabs visible. Person column shows link count. Bulk ops show domain breakdown. Import asks target domain.</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid #fbbf2440; border-radius: var(--radius); padding: 16px;">
+        <div style="color: var(--accent-amber); font-weight: 700; font-size: 13px; margin-bottom: 8px;">UC3: Tata Group</div>
+        <div style="color: var(--text-muted); font-size: 12px;">Workspace selector in nav. Company Library. Blueprint deployment. Settings inheritance badges. "All Workspaces" read-only view.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MSSP AUDIT SKILL -->
+  <div class="skill-divider" id="audit-overview">
+    <h2><span style="color: var(--accent-rose)">04</span> MSSP Audit</h2>
+    <p>5-phase, 48-check quality gate covering data model, API, frontend, integration, and deployment</p>
+  </div>
+
+  <section id="audit-phases" class="fade-in">
+    <h3>Five Audit Phases</h3>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin: 20px 0;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="background: var(--accent-rose); color: #000; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 4px; min-width: 30px; text-align: center;">1</div>
+        <div><span class="example-title">Data Model</span> <span style="color: var(--text-muted);">— 10 checks: workspaceId, personId, companyId, indexes, cascades, soft deletes</span></div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="background: var(--accent-rose); color: #000; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 4px; min-width: 30px; text-align: center;">2</div>
+        <div><span class="example-title">API & Service</span> <span style="color: var(--text-muted);">— 10 checks: workspace scoping, CASL abilities, Person de-dup, Blueprint service</span></div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="background: var(--accent-rose); color: #000; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 4px; min-width: 30px; text-align: center;">3</div>
+        <div><span class="example-title">Frontend</span> <span style="color: var(--text-muted);">— 12 checks: workspace selector, domain tabs, Person column, pagination, React Query</span></div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="background: var(--accent-rose); color: #000; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 4px; min-width: 30px; text-align: center;">4</div>
+        <div><span class="example-title">Integration</span> <span style="color: var(--text-muted);">— 8 checks: campaign&harr;training, portal unification, gamification, risk score feeds</span></div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; display: flex; align-items: center; gap: 16px;">
+        <div style="background: var(--accent-rose); color: #000; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 4px; min-width: 30px; text-align: center;">5</div>
+        <div><span class="example-title">Deployment</span> <span style="color: var(--text-muted);">— 8 checks: non-breaking migration, backfill, feature flags, rollback, UC1 unaffected</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="audit-planning" class="fade-in">
+    <h3>Planning Gate (10 Mandatory Questions)</h3>
+    <p style="color: var(--text-dimmed); margin-bottom: 16px;">No code without answers. If any answer is "I don't know" &mdash; stop and research.</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q1</span> <span style="color: var(--text-dimmed);">Which customer types affected? (UC1/UC2/UC3)</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q2</span> <span style="color: var(--text-dimmed);">Which hierarchy level owns this data?</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q3</span> <span style="color: var(--text-dimmed);">Needs Company Library tier?</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q4</span> <span style="color: var(--text-dimmed);">Needs Blueprint pattern?</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q5</span> <span style="color: var(--text-dimmed);">Touches Person/Recipient? De-dup needed?</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q6</span> <span style="color: var(--text-dimmed);">What settings? Which inherit, which workspace-only?</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q7</span> <span style="color: var(--text-dimmed);">Who can do what? (Company Admin vs Workspace Admin)</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q8</span> <span style="color: var(--text-dimmed);">What does UC1 user see? (must be simple)</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q9</span> <span style="color: var(--text-dimmed);">What does audit checklist say? (run BEFORE coding)</span>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 12px;">
+        <span style="color: var(--accent-rose); font-weight: 700;">Q10</span> <span style="color: var(--text-dimmed);">Migration path? (non-breaking? feature flag? backfill?)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- REAL-WORLD EXAMPLES -->
+  <div class="skill-divider" id="examples">
+    <h2><span style="color: var(--accent-orange)">05</span> Real-World Examples</h2>
+    <p>20 situations showing which skill to use, what you say, and what outcome to expect</p>
+  </div>
+
+  <section class="fade-in">
+    <h3 class="example-section-title" style="color: var(--accent-green);">Building New Features</h3>
+
+    <div class="examples-list">
+      <!-- Example 1 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-green);">#1</span>
+          <span class="example-title">"Build a phishing report module where employees report suspicious emails"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit</span>
+          <span class="skill-flow-arrow">&rarr;</span>
+          <span class="skill-tag skill-tag-saas">SaaS Architect</span>
+          <span class="skill-flow-arrow">&rarr;</span>
+          <span class="skill-tag skill-tag-fe">Frontend Architect</span>
+        </div>
+        <div class="example-grid">
+          <div class="example-outcome">
+            <h5>Outcome</h5>
+            <p>Audit asks 10 planning questions. SaaS designs PhishingReport schema with workspaceId + personId. Frontend builds report form + list view with UnifiedDataTable.</p>
+          </div>
+          <div class="example-risk">
+            <h5>Without Skills</h5>
+            <p>Developer builds a simple form. No workspace scoping. No Person de-dup. No Company Library for report templates. Data leaks across workspaces. UC1 users see unnecessary complexity.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Example 2 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-green);">#2</span>
+          <span class="example-title">"Add CSV import for vishing campaign phone numbers"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-fe">Frontend (wizard)</span>
+          <span style="color: var(--text-muted); font-size: 11px;">+</span>
+          <span class="skill-tag skill-tag-saas">SaaS (import flow)</span>
+        </div>
+        <div class="example-grid">
+          <div class="example-outcome">
+            <h5>Outcome</h5>
+            <p>Frontend wizard reference: 3-step flow with auto-mapper (7-strategy scoring), duplicate detection, chunked processing. SaaS: staging table &rarr; preview &rarr; commit pipeline with BullMQ.</div>
+          </div>
+          <div class="example-risk">
+            <h5>Without Skills</h5>
+            <p>Developer uploads CSV, parses all at once (UI freezes on 10K rows), no duplicate detection, no preview step, no undo capability. Phone numbers not validated.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Example 3 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-green);">#3</span>
+          <span class="example-title">"Build company-wide dashboard showing risk scores across all subsidiaries"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit (UC3)</span>
+          <span class="skill-flow-arrow">&rarr;</span>
+          <span class="skill-tag skill-tag-saas">SaaS (company endpoint)</span>
+          <span class="skill-flow-arrow">&rarr;</span>
+          <span class="skill-tag skill-tag-fe">Frontend (MSSP)</span>
+        </div>
+        <div class="example-grid">
+          <div class="example-outcome">
+            <h5>Outcome</h5>
+            <p>Audit catches: UC3-only, company-level, Person de-dup needed. SaaS: /companies/:id/dashboard endpoint aggregating across workspaces. Frontend: workspace selector + progressive complexity (hidden for UC1).</div>
+          </div>
+          <div class="example-risk">
+            <h5>Without Skills</h5>
+            <p>Developer builds dashboard that queries across workspaces without permission check. Workspace admin can see other subsidiaries' data. Person not de-duplicated &mdash; inflated headcount. UC1 users confused by empty workspace selector.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="example-section-title" style="color: var(--accent-rose);">Auditing Existing Modules</h3>
+
+    <div class="examples-list">
+      <!-- Example 4 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-rose);">#4</span>
+          <span class="example-title">"Is the training module ready for Tata Group?"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit (5 phases)</span>
+        </div>
+        <div class="example-grid">
+          <div class="example-outcome">
+            <h5>Outcome</h5>
+            <p>48-check audit: schema (personId? companyId?), API (workspace scoped?), frontend (domain tabs?), integration (campaign&harr;training?), deployment (non-breaking?). Gap report with severity + sprint estimates.</div>
+          </div>
+          <div class="example-risk">
+            <h5>Without Skills</h5>
+            <p>"Looks fine to me" &mdash; ship it. Tata Steel admin discovers they can see TCS training data. CISO can't see cross-workspace completion rates. Data leak reported. Trust lost.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Example 5 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-rose);">#5</span>
+          <span class="example-title">"Before releasing v3, check all modules for data leaks"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit (6 negative tests)</span>
+        </div>
+        <div class="example-grid">
+          <div class="example-outcome">
+            <h5>Outcome</h5>
+            <p>6 negative tests per module: cross-WS data leak, bulk cross-WS, company admin scope, Person de-dup, UC1 complexity, settings inheritance. Concrete PASS/FAIL per test with reproduction steps.</div>
+          </div>
+          <div class="example-risk">
+            <h5>Without Skills</h5>
+            <p>Manual testing misses edge cases. "It works on my machine" with one workspace. First MSSP customer finds the bug in production.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="example-section-title" style="color: var(--accent-purple);">Architecture Decisions</h3>
+
+    <div class="examples-list">
+      <!-- Example 6 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-purple);">#6</span>
+          <span class="example-title">"Should we use BullMQ or Temporal for the new email workflow?"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-saas">SaaS (Phase 0 + library-decisions)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> SaaS skill's Phase 0 library selection fires. Pre-evaluated: BullMQ for everything, Temporal only for multi-step durable sagas. Decision made in 2 minutes, not 2 days of research.
+        </div>
+      </div>
+
+      <!-- Example 7 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-purple);">#7</span>
+          <span class="example-title">"How should the JIT Coach data model look?"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit (planning)</span>
+          <span class="skill-flow-arrow">&rarr;</span>
+          <span class="skill-tag skill-tag-saas">SaaS (Phase 2)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> Audit asks: hierarchy level? (Domain). Company Library? (Yes &mdash; company tips). SaaS Phase 2: JitTip + JitTriggerRule + JitTipDelivery tables with all 3 IDs + companyId. MSSP flags catch Blueprint need early.
+        </div>
+      </div>
+    </div>
+
+    <h3 class="example-section-title" style="color: var(--accent-cyan);">Frontend Development</h3>
+
+    <div class="examples-list">
+      <!-- Example 8 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-cyan);">#8</span>
+          <span class="example-title">"Build the campaign list page with filters, bulk actions, and inline editing"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-fe">Frontend (Phase 3 + table-reference)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> UnifiedDataTable with column persistence, DnD reorder, 3-layer filters, bulk actions with confirmation, editable cells. All from table-reference.md templates. <strong style="color: var(--accent-rose);">Without:</strong> Custom table from scratch. No persistence. No DnD. Rebuilds what already exists.
+        </div>
+      </div>
+
+      <!-- Example 9 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-cyan);">#9</span>
+          <span class="example-title">"The recipients page loads 10,000 records on mount &mdash; fix this"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-fe">Frontend (migration + Phase 2)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> Migration skill Phase 3: replace <code>?limit=10000</code> with React Query hooks + server-side pagination. Query key hierarchy for cache. <strong style="color: var(--accent-rose);">Without:</strong> Someone adds <code>useMemo</code> and calls it "optimized." Still fetches 10K rows.
+        </div>
+      </div>
+    </div>
+
+    <h3 class="example-section-title" style="color: var(--accent-amber);">Migration & Refactoring</h3>
+
+    <div class="examples-list">
+      <!-- Example 10 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-amber);">#10</span>
+          <span class="example-title">"Migrate the frontend to the correct folder structure"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-fe">Frontend (migration-skill)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> 7-phase migration: src/ &rarr; feature modules &rarr; API layer &rarr; Zustand &rarr; route groups &rarr; auth &rarr; i18n. Each phase independently deployable. App keeps working throughout.
+        </div>
+      </div>
+
+      <!-- Example 11 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-amber);">#11</span>
+          <span class="example-title">"Add Drizzle ORM for the new reporting module alongside existing Prisma"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-saas">SaaS (ORM Migration section)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> SaaS skill's Prisma&rarr;Drizzle section: existing modules keep Prisma, new modules use Drizzle. Translation guide maps Prisma syntax to Drizzle. Patterns (tenant hierarchy, indexes) are ORM-agnostic. <strong style="color: var(--accent-rose);">Without:</strong> Developer rewrites existing Prisma code to Drizzle. Breaks existing queries. Two weeks of regression fixing.
+        </div>
+      </div>
+
+      <!-- Example 12 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-amber);">#12</span>
+          <span class="example-title">"Add settings inheritance to the announcement module"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-saas">SaaS (mssp-patterns)</span>
+          <span style="color: var(--text-muted); font-size: 11px;">+</span>
+          <span class="skill-tag skill-tag-fe">Frontend (MSSP UI)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> SaaS: CompanyDefaultAnnouncementSettings + useCompanyDefaults + overriddenFields[] + resolution algorithm. Frontend: COMPANY/WORKSPACE/OVERRIDE badge components per field. <strong style="color: var(--accent-rose);">Without:</strong> Developer adds a "copy settings" button. No field-level override. Company admin changes default &rarr; overwrites workspace customizations.
+        </div>
+      </div>
+    </div>
+
+    <h3 class="example-section-title" style="color: var(--accent-blue);">Planning & Prevention</h3>
+
+    <div class="examples-list">
+      <!-- Example 13 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-blue);">#13</span>
+          <span class="example-title">"My boss wants a 'copy campaign to another workspace' feature"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit (planning gate)</span>
+        </div>
+        <div class="example-grid">
+          <div class="example-outcome">
+            <h5>Outcome</h5>
+            <p>Audit's 10 questions fire: "Does this need Blueprint pattern?" &mdash; YES. "Who can do this?" &mdash; Company Admin only. "What does UC1 see?" &mdash; Nothing (hidden). Produces Planning Output Template. Correctly designs as Blueprint, not copy.</div>
+          </div>
+          <div class="example-risk">
+            <h5>Without Skills</h5>
+            <p>Developer builds a "clone" button that duplicates the campaign record. Workspace admin can copy campaigns INTO other workspaces they don't manage. Scenarios/templates don't exist in target workspace. Broken references everywhere.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Example 14 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-blue);">#14</span>
+          <span class="example-title">"I'm about to ship the portal module &mdash; what should I check?"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit (all 5 phases + 6 negative tests)</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> Full 90-minute audit. 48 checks + 6 negative tests. Report: "UC1: PASS. UC2: PARTIAL (Person column missing). UC3: FAIL (no settings inheritance, no workspace selector)." Clear gap list with sprint estimates. <strong style="color: var(--accent-rose);">Without:</strong> Ship and pray. First MSSP customer finds 12 issues in week 1.
+        </div>
+      </div>
+
+      <!-- Example 15 -->
+      <div class="example-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="example-num" style="background: var(--accent-blue);">#15</span>
+          <span class="example-title">"New developer joined &mdash; show them how we build features"</span>
+        </div>
+        <div class="skill-flow">
+          <span class="skill-tag skill-tag-audit">Audit</span>
+          <span class="skill-flow-arrow">&rarr;</span>
+          <span class="skill-tag skill-tag-saas">SaaS</span>
+          <span class="skill-flow-arrow">&rarr;</span>
+          <span class="skill-tag skill-tag-fe">Frontend</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-dimmed);">
+          <strong style="color: var(--accent-green);">Outcome:</strong> Full walkthrough: Audit planning (10 questions) &rarr; SaaS backend (7 phases) &rarr; Frontend (7 phases) &rarr; Audit verification (48 checks). New developer understands the entire flow on day 1. <strong style="color: var(--accent-rose);">Without:</strong> "Read the codebase and figure it out." Three months of learning by breaking things.
+        </div>
+      </div>
     </div>
   </section>
 

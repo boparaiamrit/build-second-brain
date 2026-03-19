@@ -2,7 +2,7 @@
 
 # Second Brain — Claude Code Plugin
 
-**Two powerful skills by Amritpal Singh Boparai**
+**10 production-grade skills by Amritpal Singh Boparai**
 
 <br>
 
@@ -25,6 +25,14 @@
 |:---:|:---|:---|
 | 1 | **Build Second Brain** | Analyze git repos commit-by-commit using parallel agents. Extract engineering patterns, architecture decisions, product thinking. Build a structured knowledge base with holistic builder profile and Claude memory injection. |
 | 2 | **SaaS Architect** | Unified enterprise backend architect for multi-tenant, multi-product SaaS systems. NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis. Converts frontend code into production-grade, tenant-aware backend APIs. |
+| 3 | **Frontend Architect** | Unified frontend architect for Next.js 16 + React 19 + TypeScript 5 + Tailwind 4 + Zustand 5 + TanStack Query/Table + Better Auth. Transforms requirements into production-grade, multi-tenant frontend implementations. |
+| 4 | **MSSP Audit** | Exhaustive 5-phase audit (48 checks) of any module against UC1/UC2/UC3 multi-tenant requirements. Covers backend, frontend, data model, API, and deployment. Generates gap reports with severity scoring. |
+| 5 | **API Docs** | API documentation, OpenAPI/Swagger generation, versioning, SDK generation, and developer portal patterns for multi-tenant SaaS NestJS APIs. |
+| 6 | **Code Review** | Exhaustive code review checklist for multi-tenant SaaS covering backend (NestJS), frontend (Next.js/React), security, performance, multi-tenancy, and MSSP compliance. |
+| 7 | **DevOps** | Production deployment, CI/CD, Docker, monitoring, and database migration patterns. Zero-downtime deployments, feature flags, rollback strategies, and observability. |
+| 8 | **Performance** | Performance optimization patterns for backend (query optimization, caching, BullMQ tuning), frontend (bundle analysis, React profiling, virtualization), and database (indexing, query plans, TimescaleDB). |
+| 9 | **Security** | Enterprise security architect for multi-tenant SaaS. Authentication/authorization, tenant isolation, encryption, secret management, incident response, and OWASP compliance. |
+| 10 | **Testing** | Exhaustive testing patterns — unit tests (Vitest), integration tests, E2E tests (Playwright), multi-tenant isolation tests, negative security tests, and test data factories. |
 
 ---
 
@@ -410,25 +418,27 @@ On resume, the orchestrator parses `progress.md` to find the first unchecked ite
 second-brain/
 ├── 📁 .claude-plugin/
 │   └── plugin.json                            Plugin manifest
-├── 📁 skills/build-second-brain/
-│   ├── SKILL.md                               Main orchestrator (600+ lines)
-│   ├── 📁 references/
-│   │   ├── harvest-agent-prompt.md            Phase 1: commit analysis agent
-│   │   ├── artifact-harvest-prompt.md         Phase 1A: artifact mining agent
-│   │   ├── category-agent-prompt.md           Phase 2: category specialist agent
-│   │   ├── brain-builder-prompt.md            Phase 3: knowledge base builder
-│   │   ├── profile-generator-prompt.md        Phase 3: engineer profile writer
-│   │   ├── memory-injector-prompt.md          Phase 3: Claude memory injector
-│   │   └── progress-template.md               Progress tracking template
-│   └── 📁 scripts/
-│       ├── indexer.py                         Category indexer (fuzzy matching)
-│       └── verify.py                          Post-run verification (12+ checks)
+├── 📁 skills/
+│   ├── 📁 build-second-brain/                 Git repo analysis + knowledge base
+│   │   ├── SKILL.md                           Main orchestrator (600+ lines)
+│   │   ├── 📁 references/                     Agent prompts (7 files)
+│   │   └── 📁 scripts/                        indexer.py + verify.py
+│   ├── 📁 saas-architect-skill/               Enterprise backend architect
+│   │   ├── SKILL.md                           NestJS + Drizzle + PostgreSQL
+│   │   └── mssp-patterns.md                   MSSP multi-tenant patterns
+│   ├── 📁 frontend-architect-skill/           Frontend architect
+│   │   ├── SKILL.md                           Next.js + React + TanStack
+│   │   └── (4 reference files)
+│   ├── 📁 mssp-audit-skill/                   5-phase MSSP compliance audit
+│   ├── 📁 api-docs-skill/                     OpenAPI + SDK generation
+│   ├── 📁 code-review-skill/                  PR review checklists
+│   ├── 📁 devops-skill/                       CI/CD + Docker + monitoring
+│   ├── 📁 performance-skill/                  Backend + frontend + DB optimization
+│   ├── 📁 security-skill/                     Enterprise auth + OWASP
+│   └── 📁 testing-skill/                      Unit + E2E + multi-tenant tests
 ├── 📁 hooks/
 │   ├── hooks.json                             6 runtime enforcement hooks
-│   └── 📁 scripts/
-│       ├── validate-write-paths.sh            Path & filename validation
-│       ├── validate-scratchpad-output.sh      Output structure validation
-│       └── validate-agent-completion.sh       Completion progress check
+│   └── 📁 scripts/                            Validation scripts (3 files)
 ├── 🌐 index.html                              Documentation website
 ├── 📖 README.md
 └── 📄 LICENSE                                 MIT

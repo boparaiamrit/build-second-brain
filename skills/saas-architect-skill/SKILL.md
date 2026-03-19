@@ -1,5 +1,5 @@
 ---
-name: saas-architect
+name: saas-architect-skill
 description: >
   Unified enterprise SaaS backend architect skill for NestJS + Drizzle ORM + PostgreSQL +
   TimescaleDB + BullMQ + Redis. Converts frontend code into production-grade, multi-tenant,
@@ -19,6 +19,34 @@ description: >
 
 ## Stack
 NestJS + Drizzle ORM + PostgreSQL + TimescaleDB + BullMQ + Redis
+
+### ORM Migration: Prisma → Drizzle
+
+The existing backend uses **Prisma**. All NEW features use **Drizzle ORM**.
+
+| Context | ORM | Rule |
+|---------|-----|------|
+| Existing modules (recipients, campaigns, training, etc.) | Prisma | Read/maintain existing Prisma schemas. Do NOT rewrite to Drizzle. |
+| New modules / new tables | Drizzle | All new tables use Drizzle schema definitions from this skill. |
+| Queries in existing services | Prisma Client | Continue using `prisma.recipient.findMany()` pattern. |
+| Queries in new services | Drizzle | Use `db.select().from(table).where()` pattern. |
+| Migrations | Both | Prisma migrations for existing tables. Drizzle migrations for new tables. |
+
+**Translation guide (Prisma → Drizzle concepts):**
+```
+Prisma                          → Drizzle
+model Recipient { ... }         → export const recipients = pgTable(...)
+@@unique([workspaceId, email])  → uniqueIndex().on(table.workspaceId, table.email)
+@@index([workspaceId])          → index().on(table.workspaceId)
+@relation(fields: [...])        → .references(() => table.id)
+@default(now())                 → .defaultNow()
+@default(uuid())                → .defaultRandom()
+String?                         → text('field')  (nullable by default in Drizzle)
+Json                            → jsonb('field').$type<T>()
+DateTime                        → timestamp('field')
+```
+
+**When reading this skill's schema templates:** They show Drizzle syntax. If adding a table to the existing Prisma-based backend, translate the Drizzle template to Prisma syntax. The PATTERNS (tenant hierarchy, indexes, denormalization) are the same regardless of ORM.
 
 ---
 
@@ -171,6 +199,12 @@ BOUNDARY: Does this cross domain boundaries? (reporting vs CRUD)
 | 🔌 EXTERNAL | External API? → Adapter pattern + research template |
 | 🚫 N+1 | Aggregates related data? → JOIN or inArray, never loop |
 | ♻️ CACHE | Read-heavy? → Redis with domain/workspace scoping |
+| 👤 PERSON | Touches recipients? → Person de-dup needed for UC2/UC3? (see mssp-patterns.md) |
+| 📚 LIBRARY | Shareable content? → Needs companyId for Company Library tier? |
+| 📋 BLUEPRINT | Deployable across workspaces? → Needs Blueprint pattern? |
+| ⚙️ SETTINGS | Configurable per workspace? → Needs settings inheritance from company? |
+| 👥 ADMIN | Who can do this? → Company Admin only? Workspace Admin? Both with different scope? |
+| 🔒 ISOLATION | Cross-workspace risk? → Can workspace admin accidentally see other workspace data? |
 
 ### Phase 2: Database Schema
 
@@ -386,3 +420,20 @@ sql`custom_fields->'tags' @> ${JSON.stringify([t])}` // array contains
 - [ ] Runtime selection → Manager pattern
 - [ ] Plan-based limits → Strategy pattern
 - [ ] New library → ≥3 options compared before choosing
+
+**MSSP / Multi-Tenant (see mssp-patterns.md)**
+- [ ] UC1/UC2/UC3 all considered — progressive complexity applied
+- [ ] Person entity for cross-identity linking (UC2: intra-workspace, UC3: cross-workspace)
+- [ ] Company Library tier exists for shareable content (scenarios, training, templates, agents)
+- [ ] Blueprint pattern for cross-workspace deployment (campaigns, announcements, vishing)
+- [ ] Settings inheritance: company defaults → workspace overrides with `overriddenFields[]`
+- [ ] Admin roles: Company Owner/Admin vs Workspace Admin — permission boundaries enforced
+- [ ] Cross-workspace training credit via `TrainingCompletionType.CROSS_WS_CREDIT`
+- [ ] Reports de-duplicate by Person (unique headcount, not inflated recipient count)
+
+**Audit (see separate `mssp-audit-skill`)**
+- [ ] Run MSSP audit (5 phases, 48 checks) from `mssp-audit-skill` before shipping
+- [ ] All UC3 CRITICAL items pass for MSSP customers
+- [ ] All UC2 Required items pass for multi-domain customers
+- [ ] UC1 experience is clean — no unnecessary complexity visible
+- [ ] 10 mandatory planning questions answered before writing any code
