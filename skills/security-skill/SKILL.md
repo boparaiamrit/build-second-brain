@@ -462,7 +462,7 @@ Layer 3: ABILITY CHECK (CASL)
 type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'export' | 'impersonate';
 type Subjects = 'Recipient' | 'Campaign' | 'Training' | 'Settings' | 'User' | 'Workspace' | 'all';
 
-export function defineAbilitiesFor(user: AuthenticatedUser, tenantContext: TenantContext) {
+export function defineAbilitiesFor(user: AuthenticatedUser, tenantContext: DomainContext) {
   const { can, cannot, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability);
 
   switch (user.role) {
