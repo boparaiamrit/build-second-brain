@@ -14,7 +14,7 @@
       "author": {
         "name": "Amritpal Singh Boparai"
       },
-      "source": ".",
+      "source": "./plugins/build-second-brain",
       "category": "development"
     }
   ]

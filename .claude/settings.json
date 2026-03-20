@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p plugins/build-second-brain/.claude-plugin)",
+      "Bash(cp .claude-plugin/plugin.json plugins/build-second-brain/.claude-plugin/plugin.json)",
+      "Bash(cp -r skills plugins/build-second-brain/)",
+      "Bash(cp -r hooks plugins/build-second-brain/)"
+    ]
+  }
+}
